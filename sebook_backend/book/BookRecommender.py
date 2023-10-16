@@ -2,21 +2,13 @@ import json
 import networkx as nx
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from book.models import Book
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 class BookRecommender:
     def __init__(self):
-        with open('/content/drive/MyDrive/dataset/testData.json', 'r') as f:
-            self.data = json.load(f)
-
-        self.G = nx.Graph()
-
-        for book in self.data:
-            self.G.add_node(book['title'], category=book['depth3'])
-
-        for book1 in self.data:
-            for book2 in self.data:
-                if book1 != book2 and book1['depth3'] == book2['depth3']:
-                    self.G.add_edge(book1['title'], book2['title'])
+        self.data = list(Book.objects.values())  # 데이터베이스에서 책 정보를 가져옵니다.
 
         descriptions = [book['title'] for book in self.data]
         vectorizer = TfidfVectorizer()
@@ -26,6 +18,9 @@ class BookRecommender:
     def recommend_books(self, user_book):
         
         idx = next(i for i, book in enumerate(self.data) if book["title"] == user_book)
+        
+        if idx is None:
+            return []
         
         sim_scores = list(enumerate(self.cosine_sim[idx]))
         sim_scores.sort(key=lambda x: x[1], reverse=True)
