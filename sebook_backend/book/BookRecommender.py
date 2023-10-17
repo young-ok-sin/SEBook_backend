@@ -42,7 +42,7 @@ class BookRecommender:
         if not related_books:
             return []
         
-        return [book[0] for book in related_books[:10]]
+        return [book[0] for book in related_books[:5]]
 
     
 # class BookRecommender:
