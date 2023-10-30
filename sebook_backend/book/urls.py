@@ -1,13 +1,11 @@
 from django.urls import path
-from .views import RecommendView
+from .views import RecommendView,like_book_create
+from .views import BookListRead,UserSavedBooks
 from . import views
 
-# urlpatterns = [
-#     path('bookdatas/', views.getTestDatas, name="bookdataTest"),
-#     path('recommendBook/<str:book_title>', RecommendView.as_view(), name='recommend'),
-# ]
-
 urlpatterns = [
-    path('bookdatas/', views.getTestDatas, name="bookdataTest"),
-    path('recommendBook', RecommendView.as_view(), name='recommend'),  # '<str:book_title>' 부분 제거
+    path('recommendBook', RecommendView.as_view(), name='recommend'),
+    path('bookLike', like_book_create),
+    path('bookListRead', BookListRead.as_view(), name='book-list-read'),
+    path('likeBookListRead', UserSavedBooks.as_view(), name='user-like-book'),
 ]

@@ -27,8 +27,8 @@ class Book(models.Model):
         
 class LikeBook(models.Model):
     like_bookNum = models.AutoField(primary_key=True)
-    userNum_like_book= models.ForeignKey(User,on_delete=models.CASCADE)
-    isbn13_like_book = models.ForeignKey(Book,on_delete=models.CASCADE)
+    userNum_like_book= models.ForeignKey(User, on_delete=models.CASCADE, db_column='userNum_like_book')
+    isbn13_like_book = models.ForeignKey(Book, on_delete=models.CASCADE, db_column='isbn13_like_book')
     
     class Meta:
         managed = False

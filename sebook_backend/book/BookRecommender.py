@@ -1,6 +1,5 @@
 import json
 import networkx as nx
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from book.models import Book
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -23,26 +22,35 @@ class BookRecommender:
             for j in range(i+1, len(self.data)):
                 if self.data[i]["depth3"] == self.data[j]["depth3"]:
                     self.G.add_edge(self.data[i]['title'], self.data[j]['title'], weight=cosine_sim[i][j])
+    
     def recommend_books(self, user_book):
+        if not user_book or not self.G.has_node(user_book):
+            # 아무 데이터나 5개 반환
+            random_books = []
+            for book in self.data[:5]:
+                random_books.append({
+                    'title': book['title'],
+                    'author': book['author'],
+                    'cover': book['cover'],
+                    'description': book['description']
+                })
+            return random_books
             
-            if not self.G.has_node(user_book):
-                return []
-                
-            related_books = sorted(self.G[user_book].items(), key=lambda x: x[1]['weight'], reverse=True)
-            
-            if not related_books:
-                return []
-            
-            # title만 반환하는 대신 title, author, cover, description을 포함한 딕셔너리를 반환합니다.
-            recommendations = []
-            for book in related_books[:5]:
-                for data in self.data:
-                    if data['title'] == book[0]:
-                        recommendations.append({
-                            'title': data['title'],
-                            'author': data['author'],
-                            'cover': data['cover'],
-                            'description': data['description']
-                        })
-                        break
-            return recommendations
+        related_books = sorted(self.G[user_book].items(), key=lambda x: x[1]['weight'], reverse=True)
+        
+        if not related_books:
+            return []
+        
+        recommendations = []
+        for book in related_books[:5]:
+            for data in self.data:
+                if data['title'] == book[0]:
+                    recommendations.append({
+                        'title': data['title'],
+                        'author': data['author'],
+                        'cover': data['cover'],
+                        'description': data['description']
+                    })
+                    break
+
+        return recommendations
