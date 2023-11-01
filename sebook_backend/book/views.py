@@ -15,16 +15,16 @@ class RecommendView(View):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.recommender = BookRecommender()  # 앱이 시작할 때 한 번만 초기화합니다.
-    # def get(self, request, *args, **kwargs):
-    #     userNum = kwargs.get('userNum')
-    #     recommendations = self.recommender.recommend_books(userNum)
-
-    #     return HttpResponse(json.dumps({'recommendations': recommendations}, ensure_ascii=False), content_type='application/json; charset=utf8')
     def get(self, request, *args, **kwargs):
-        userNum = request.GET.get('userNum')
+        userNum = kwargs.get('userNum')
         recommendations = self.recommender.recommend_books(userNum)
 
-        return JsonResponse({'recommendations': recommendations}, safe=False)        
+        return HttpResponse(json.dumps({'recommendations': recommendations}, ensure_ascii=False), content_type='application/json; charset=utf8') # 쿼리스트링 사용 시
+    # def get(self, request, *args, **kwargs): # params 사용 시
+    #     userNum = request.GET.get('userNum')
+    #     recommendations = self.recommender.recommend_books(userNum)
+
+    #     return JsonResponse({'recommendations': recommendations}, safe=False)        
 
 
 class BookListRead(APIView):
