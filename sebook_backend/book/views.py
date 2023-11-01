@@ -15,19 +15,22 @@ class RecommendView(View):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.recommender = BookRecommender()  # 앱이 시작할 때 한 번만 초기화합니다.
-        
+    # def get(self, request, *args, **kwargs):
+    #     userNum = kwargs.get('userNum')
+    #     recommendations = self.recommender.recommend_books(userNum)
+
+    #     return HttpResponse(json.dumps({'recommendations': recommendations}, ensure_ascii=False), content_type='application/json; charset=utf8')
     def get(self, request, *args, **kwargs):
-        book_title = request.GET.get('user_book')
-        recommendations = self.recommender.recommend_books(book_title)
-        
-        # JsonResponse 객체는 Python 딕셔너리를 HTTP 응답으로 변환해줍니다.
-        return JsonResponse({'recommendations': recommendations}, safe=False)
+        userNum = request.GET.get('userNum')
+        recommendations = self.recommender.recommend_books(userNum)
+
+        return JsonResponse({'recommendations': recommendations}, safe=False)        
+
 
 class BookListRead(APIView):
     def get(self, request):
         # 도서 목록 조회
-        book_list = Book.objects.all()
-        
+        book_list = Book.objects.all()   
         # 시리얼라이즈
         serializer = BookSerializer(book_list, many=True)
         
