@@ -38,25 +38,39 @@ class BookListRead(APIView):
         return Response({"bookList": serializer.data})
 
 @csrf_exempt
-def like_book_create(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
+def like_book(request):
+    if request.method in ['POST', 'DELETE']:
+        if request.method == 'POST':
+            data = json.loads(request.body)
+        elif request.method == 'DELETE':
+            data = request.GET
+
         try:
             user = User.objects.get(userNum=data['userNum'])
             book = Book.objects.get(isbn13=data['isbn13'])
         except (User.DoesNotExist, Book.DoesNotExist):
             return JsonResponse({"error": "User or Book not found"}, status=404)
-        
-        if LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).exists():
-            LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).delete()
-            return JsonResponse({"message": "LikeBook removed successfully"}, status=200)
-        else:
-            like_book = LikeBook(userNum_like_book=user, isbn13_like_book=book)
-            like_book.save()
-            return JsonResponse({"message": "LikeBook created successfully"}, status=201)
+
+        like_book_exists = LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).exists()
+
+        if request.method == 'POST':
+            if like_book_exists:
+                return JsonResponse({"error": "LikeBook already exists"}, status=400)
+            else:
+                like_book = LikeBook(userNum_like_book=user, isbn13_like_book=book)
+                like_book.save()
+                return JsonResponse({"message": "LikeBook created successfully"}, status=201)
+
+        elif request.method == 'DELETE':
+            if like_book_exists:
+                LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).delete()
+                return JsonResponse({"message": "LikeBook removed successfully"}, status=200)
+            else:
+                return JsonResponse({"error": "LikeBook not found"}, status=404)
+
     else:
         return JsonResponse({"error": "Invalid request method"}, status=400)
-    
+
 # @csrf_exempt
 # def like_book_create(request):
 #     if request.method == 'POST':
