@@ -12,8 +12,8 @@ class BookRecommender:
 
     def recommend_books(self, userNum):
         like_books = LikeBook.objects.filter(userNum_like_book=userNum).order_by('-like_bookNum')
+        
         user_books = [like_book.isbn13_like_book for like_book in like_books]
-
         if not user_books:
             # 아무 데이터나 5개 반환
             random_books = []
