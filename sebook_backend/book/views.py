@@ -70,7 +70,7 @@ class LikeBookView(APIView):
         openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
     ])
     def post(self, request, *args, **kwargs):
-        data = request.GET
+        data = request.query_params
         try:
             user = User.objects.get(userNum=data['userNum'])
             book = Book.objects.get(isbn13=data['isbn13'])
@@ -91,7 +91,7 @@ class LikeBookView(APIView):
         openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
     ])
     def delete(self, request, *args, **kwargs):
-        data = request.GET
+        data = request.query_params
         try:
             user = User.objects.get(userNum=data['userNum'])
             book = Book.objects.get(isbn13=data['isbn13'])
