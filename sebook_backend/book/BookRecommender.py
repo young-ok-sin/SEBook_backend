@@ -12,9 +12,8 @@ class BookRecommender:
 
     def recommend_books(self, userNum):
         like_books = LikeBook.objects.filter(userNum_like_book=userNum).order_by('-like_bookNum')
-
+        recommended_books_isbn13 = []
         user_books = [like_book.isbn13_like_book for like_book in like_books]
-        recommended_books_isbn13 = [book.isbn13 for book in user_books]
         if not user_books:
             # 아무 데이터나 5개 반환
             random_books = random.sample(self.data, 5)
@@ -26,7 +25,7 @@ class BookRecommender:
                 'categoryId': book.categoryId_book.categoryId
             } for book in random_books]
             return random_books
-                        # 사용자가 좋아요를 누른 책과 같은 카테고리의 책들을 대상으로 TF-IDF와 코사인 유사도를 계산
+        # 사용자가 좋아요를 누른 책과 같은 카테고리의 책들을 대상으로 TF-IDF와 코사인 유사도를 계산
         same_category_books = list(Book.objects.filter(categoryId_book=user_books[0].categoryId_book))
 
         descriptions = [book.title for book in same_category_books]
@@ -34,7 +33,7 @@ class BookRecommender:
         tfidf_matrix = vectorizer.fit_transform(descriptions)
         cosine_sim = cosine_similarity(tfidf_matrix)
 
-            # Graph 생성하기: 각 Node가 책을, Edge가 유사도(cosine similarity)를 나타내게 합니다.
+        # Graph 생성하기: 각 Node가 책을, Edge가 유사도(cosine similarity)를 나타내게 합니다.
         self.G = nx.Graph()
         for i in range(len(same_category_books)):
             for j in range(i+1, len(same_category_books)):
