@@ -41,8 +41,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = True
 
 ALLOWED_HOSTS = ['172.30.66.199',
-                 '172.20.10.6',
-                '127.0.0.1']
+                '172.20.10.6',
+                '127.0.0.1',]
 
 
 # Application definition
@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'bookReport',
     'user',
     'community',
-    'corsheaders'
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -187,5 +187,5 @@ CORS_ALLOW_HEADERS = (
 
 # CORS 추가
 CORS_ORIGIN_WHITELIST = (
-    'http://172.30.66.199:8000','http://127.0.0.1:8000', 'http://localhost:3000')
+    'http://172.30.66.199:8000','http://172.20.10.6:8000','http://127.0.0.1:8000', 'http://localhost:3000')
 CORS_ALLOW_CREDENTIALS = True
