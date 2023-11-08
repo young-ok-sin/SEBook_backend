@@ -4,16 +4,15 @@ from book.models import Book
 
 # Create your models here.
 
-
 class Community(models.Model):
     postNum = models.AutoField(primary_key=True)
-    contents = models.TimeField(null = False)
-    userNum_community = models.ForeignKey(User,on_delete=models.CASCADE)
-    isbn13_community = models.ForeignKey(Book,on_delete=models.CASCADE)
+    contents = models.TextField(null = False)
+    userNum_community = models.ForeignKey(User,on_delete=models.CASCADE,db_column='userNum_community')
+    isbn13_community = models.ForeignKey(Book,on_delete=models.CASCADE,db_column='isbn13_community')
     
     class Meta:
         managed = False
-        db_table = 'commmunity'
+        db_table = 'community'
 
 class LikeCommunity(models.Model):
     like_communityNum = models.AutoField(primary_key=True)

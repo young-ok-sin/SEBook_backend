@@ -22,7 +22,8 @@ class BookRecommender:
                 'author': book.author,
                 'cover': book.cover,
                 'description': book.description,
-                'categoryId': book.categoryId_book.categoryId
+                'categoryId': book.categoryId_book.categoryId,
+                'isbn13':book.isbn13
             } for book in random_books]
             return random_books
         # 사용자가 좋아요를 누른 책과 같은 카테고리의 책들을 대상으로 TF-IDF와 코사인 유사도를 계산
@@ -72,7 +73,8 @@ class BookRecommender:
                 'author': book.author,
                 'cover': book.cover,
                 'description': book.description,
-                'categoryId': book.categoryId_book.categoryId
+                'categoryId': book.categoryId_book.categoryId,
+                'isbn13':book.isbn13
         } for book in recommended_books]
 
         return recommendations[:15]

@@ -5,10 +5,10 @@ from book.models import Book
 
 class BookReport(models.Model):
     reportNum = models.AutoField(primary_key=True,null = False)
-    userNum_report = models.ForeignKey(User,on_delete=models.CASCADE)
+    userNum_report = models.ForeignKey(User,on_delete=models.CASCADE, db_column='userNum_report')
     reportContents = models.TextField(null = False)
     reportTitle = models.TextField(null = False)
-    isbn13_report = models.ForeignKey(Book,on_delete=models.CASCADE)
+    isbn13_report = models.ForeignKey(Book,on_delete=models.CASCADE, db_column='isbn13_report')
     
     class Meta:
         managed = False

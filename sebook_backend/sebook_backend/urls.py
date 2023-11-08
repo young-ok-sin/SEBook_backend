@@ -22,6 +22,8 @@ from drf_yasg import openapi
 
 schema_url_patterns = [ 
     path('book/', include('book.urls')),
+    path('community/', include('community.urls')),
+    path('bookReport/', include('bookReport.urls')), 
     ]
 
 schema_view_v1 = get_schema_view(
@@ -43,4 +45,6 @@ urlpatterns = [
     re_path(r'^redoc/$', schema_view_v1.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     
     path('book/', include('book.urls')),
+    path('community/', include('community.urls')), 
+    path('bookReport/', include('bookReport.urls')), 
 ]
