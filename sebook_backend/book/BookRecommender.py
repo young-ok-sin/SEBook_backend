@@ -9,12 +9,15 @@ import random
 class BookRecommender:
     def __init__(self):
         self.data = list(Book.objects.select_related('categoryId_book').all())
-
+# 코사인 유사도 (제목, 작가, 묘사)
     def recommend_books(self, userNum):
         like_books = LikeBook.objects.filter(userNum_like_book=userNum).order_by('-like_bookNum')
         recommended_books_isbn13 = []
         user_books = [like_book.isbn13_like_book for like_book in like_books]
-        if not user_books:
+        # 사용자가 좋아요를 누른 책의 ISBN 목록을 만듭니다.
+        user_books_isbn13 = [book.isbn13 for book in user_books]
+
+        if not user_books: 
             # 아무 데이터나 5개 반환
             random_books = random.sample(self.data, 5)
             random_books = [{
@@ -27,7 +30,7 @@ class BookRecommender:
             } for book in random_books]
             return random_books
         # 사용자가 좋아요를 누른 책과 같은 카테고리의 책들을 대상으로 TF-IDF와 코사인 유사도를 계산
-        same_category_books = list(Book.objects.filter(categoryId_book=user_books[0].categoryId_book))
+        same_category_books = list(Book.objects.filter(categoryId_book=user_books[0].categoryId_book).exclude(isbn13__in=user_books_isbn13))
 
         descriptions = [book.title for book in same_category_books]
         vectorizer = TfidfVectorizer()
@@ -42,11 +45,8 @@ class BookRecommender:
                     self.G.add_edge(same_category_books[i].title, same_category_books[j].title, weight=cosine_sim[i][j])
             
         latest_book = user_books[0]
-        same_category_books = Book.objects.filter(categoryId_book=latest_book.categoryId_book).exclude(isbn13__in=recommended_books_isbn13)
+        same_category_books = Book.objects.filter(categoryId_book=latest_book.categoryId_book).exclude(isbn13__in=user_books_isbn13 + recommended_books_isbn13)[:5]
         
-        if len(same_category_books) > 5:
-            same_category_books = same_category_books[:5]
-            
         for book in same_category_books:
             recommended_books_isbn13.append(book.isbn13)
                 
@@ -60,8 +60,8 @@ class BookRecommender:
             for category, ratio in category_ratios.items():
                 if len(recommended_books_isbn13) >= 15:
                     break
-                num_books = int(ratio * 10)
-                category_books = Book.objects.filter(categoryId_book=category).exclude(isbn13__in=recommended_books_isbn13)[:num_books]
+                num_books = int(ratio * (15 - len(recommended_books_isbn13)))  # 이 부분을 수정하여, 남은 추천 도서 수를 비율에 맞게 분배합니다.
+                category_books = Book.objects.filter(categoryId_book=category).exclude(isbn13__in=user_books_isbn13 + recommended_books_isbn13)[:num_books]
                 for book in category_books:
                     if len(recommended_books_isbn13) >= 15:
                         break

@@ -14,9 +14,9 @@ class CreateParagraph(APIView):
         openapi.Parameter('isbn13_community', openapi.IN_QUERY, description="isbn13_community", type=openapi.TYPE_STRING)
     ])
     def post(self, request):
-        contents = request.query_params.get('contents')
-        userNum_community = request.query_params.get('userNum_community')
-        isbn13_community = request.query_params.get('isbn13_community')
+        contents = request.data.get('contents')
+        userNum_community = request.data.get('userNum_community')
+        isbn13_community = request.data.get('isbn13_community')
         
         # User 모델과 Book 모델의 인스턴스 가져오기
         user = User.objects.get(userNum=userNum_community)
@@ -31,3 +31,13 @@ class CreateParagraph(APIView):
         # 생성된 Community 객체를 직렬화하여 응답 데이터로 반환
         serializer = CommunitySerializer(community)
         return JsonResponse(serializer.data)
+
+class CommunityListRead(APIView):
+    def get(self, request):
+        community_list =  Community.objects.all()
+
+        if not community_list:
+            return Response({"message": "No Community found"}, status=404)
+
+        serializer = CommunitySerializer(community_list, many=True)
+        return Response({"CommunityList": serializer.data})

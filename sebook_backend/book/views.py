@@ -14,7 +14,6 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.db import connection
-from Levenshtein import distance
 from django.db.models import Q
 
 class RecommendView(APIView):
@@ -40,7 +39,7 @@ class RecommendView(APIView):
             return JsonResponse({"message": "No recommendations found for this user"}, status=404)
 
         return JsonResponse({'recommendations': recommendations}, safe=False)
-    
+
 class BookListRead(APIView):
     def get(self, request):
         book_list = Book.objects.all()
@@ -161,54 +160,3 @@ class SearchBookByTitle(APIView):
         serializer = BookSerializer(books, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-# Levenshtein 사용
-# class SearchBookByTitle(APIView):
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('title', openapi.IN_QUERY, description="search by title", type=openapi.TYPE_STRING)
-#     ])
-#     def get(self, request, *args, **kwargs):
-#         title = request.query_params.get('title', None)
-#         if title is None:
-#             return Response({"error": "title parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         # 모든 도서를 검색합니다.
-#         books = Book.objects.all()
-
-#         # 각 도서의 제목과 검색어의 Levenshtein 거리를 계산하고, 그 결과를 리스트로 저장합니다.
-#         distances = [(book, distance(title, book.title)) for book in books]
-
-#         # Levenshtein 거리가 작은 순으로 도서를 정렬합니다.
-#         sorted_books = sorted(distances, key=lambda x: x[1])
-
-#         # Levenshtein 거리가 가장 작은 20개의 도서만 선택합니다.
-#         selected_books = sorted_books[:20]
-        
-#         print(selected_books)
-
-#         # 선택된 도서의 정보를 반환합니다.
-#         return Response({"books": [(book[0].title, book[1]) for book in selected_books]})
-
-# mysql내 함수 사용
-# class SearchBookByTitle(APIView):
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('title', openapi.IN_QUERY, description="search by title", type=openapi.TYPE_STRING)
-#     ])
-#     def get(self, request, *args, **kwargs):
-#         title = request.query_params.get('title', None)
-#         if title is None:
-#             return Response({"error": "title parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         with connection.cursor() as cursor:
-#             query = """
-#             SELECT title, LEVENSHTEIN(title, %s) AS distance
-#             FROM book
-#             ORDER BY distance ASC
-#             LIMIT 20;
-#             """
-#             cursor.execute(query, [title])
-#             rows = cursor.fetchall()
-
-#         # 결과를 JSON 형식으로 변환하여 응답합니다.
-#         result = [{'title': row[0], 'distance': row[1]} for row in rows]
-#         return JsonResponse(result, safe=False)
