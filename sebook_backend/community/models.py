@@ -16,8 +16,8 @@ class Community(models.Model):
 
 class LikeCommunity(models.Model):
     like_communityNum = models.AutoField(primary_key=True)
-    userNum_like_community = models.ForeignKey(User,on_delete=models.CASCADE)
-    postNum_like_community = models.ForeignKey(Community,on_delete=models.CASCADE)
+    userNum_like_community = models.ForeignKey(User,on_delete=models.CASCADE,db_column='userNum_like_community')
+    postNum_like_community = models.ForeignKey(Community,on_delete=models.CASCADE,db_column='postNum_like_community')
     
     class Meta:
         managed = False
