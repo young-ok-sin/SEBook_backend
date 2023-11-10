@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import BookReport,User,Book
+from .models import BookReport,User,Book,LikeBookReport
 from .serializer import BookReportSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -49,3 +49,34 @@ class DeleteBookReport(APIView):
             return Response({"error": "BookReport not found"}, status=status.HTTP_404_NOT_FOUND)
         book_report.delete()
         return Response({"message": "BookReport deleted"}, status=status.HTTP_204_NO_CONTENT)
+    
+class UserSavedBookReports(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
+    ])
+    def get(self, request):
+        userNum = request.query_params.get('userNum')
+        
+        try:
+            user = User.objects.get(userNum=userNum)
+            like_bookreports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
+            saved_books = [like_bookreport.reportNum_like_bookreport for like_bookreport in like_bookreports]
+            serializer = BookReportSerializer(saved_books, many=True)
+            return Response({"likeBookReportList": serializer.data})
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+class UserWriteBookReports(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
+    ])
+    def get(self, request):
+        userNum = request.query_params.get('userNum')
+        
+        try:
+            user = User.objects.get(userNum=userNum)
+            bookreports = BookReport.objects.filter(userNum_report=user)
+            serializer = BookReportSerializer(bookreports, many=True)
+            return Response({"userWriteBookReportList": serializer.data})
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)

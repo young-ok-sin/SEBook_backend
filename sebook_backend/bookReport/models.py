@@ -16,9 +16,9 @@ class BookReport(models.Model):
 
 class LikeBookReport(models.Model):
     like_bookreportNum = models.AutoField(primary_key=True)
-    userNum_like_bookreport = models.ForeignKey(User,on_delete=models.CASCADE)
+    userNum_like_bookreport = models.ForeignKey(User,on_delete=models.CASCADE, db_column='userNum_like_bookreport')
     reportNum_like_bookreport = models.ForeignKey(BookReport,on_delete=models.CASCADE,db_column='reportNum_like_bookreport')
-    
     class Meta:
         managed = False
         db_table = 'like_bookreport'
+        
