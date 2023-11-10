@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import BookReport,User,Book,LikeBookReport
-from .serializer import BookReportSerializer
+from .serializer import BookReportReadSerializer,BookReportSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
@@ -17,6 +17,11 @@ class CreateBookReport(APIView):
         openapi.Parameter('isbn13_report', openapi.IN_QUERY, description="isbn13_report", type=openapi.TYPE_STRING)
     ])
     def post(self, request):
+        #테스트 용
+        # userNum_report = request.GET.get('userNum_report')
+        # reportContents = request.GET.get('reportContents')
+        # reportTitle = request.GET.get('reportTitle')
+        # isbn13_report = request.GET.get('isbn13_report')
         userNum_report = request.data.get('userNum_report')
         reportContents = request.data.get('reportContents')
         reportTitle = request.data.get('reportTitle')
@@ -87,14 +92,25 @@ class UserWriteBookReports(APIView):
             return Response({"error": "User not found"}, status=404)
 
 class ReadAllBookReport(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
-        bookReportsList =  BookReport.objects.all()
-
-        if not bookReportsList:
-            return Response({"message": "No bookReport found"}, status=404)
-
-        serializer = BookReportSerializer(bookReportsList, many=True)
-        return Response({"bookReportList": serializer.data})
+        reportNum = request.query_params.get('userNum')  # 로그인한 사용자의 번호(reportNum)
+        
+        # 사용자가 작성한 독후감들을 가져옴
+        user_reports = BookReport.objects.filter(userNum_report=reportNum)
+        user_reports_serializer = BookReportReadSerializer(user_reports, many=True)
+        
+        # 사용자가 공감한 독후감들을 가져옴
+        liked_reports = BookReport.objects.filter(likebookreport__userNum_like_bookreport=reportNum)
+        liked_reports_serializer = BookReportReadSerializer(liked_reports, many=True)
+        
+        response_data = {
+            "user_reports": user_reports_serializer.data,
+            "liked_reports": liked_reports_serializer.data
+        }
+        return Response(response_data)
 
 class LikeBookReportView(APIView):
     @swagger_auto_schema(manual_parameters=[

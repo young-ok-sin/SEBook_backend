@@ -7,7 +7,7 @@ class CommunitySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Community
-        fields = ['title', 'author', 'postNum', 'contents', 'userNum_community', 'isbn13_community']
+        fields = ['title', 'author', 'postNum', 'contents', 'userNum_community', 'isbn13_community','registDate_community']
 
 class ComunityCreateSerialzer(serializers.ModelSerializer):
     class Meta:
