@@ -82,7 +82,7 @@ class UserWriteBookReports(APIView):
             user = User.objects.get(userNum=userNum)
             bookreports = BookReport.objects.filter(userNum_report=user)
             serializer = BookReportSerializer(bookreports, many=True)
-            return Response({"userWriteBookReportList": serializer.data})
+            return Response({"userBookReportList": serializer.data})
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
@@ -94,7 +94,7 @@ class ReadAllBookReport(APIView):
             return Response({"message": "No bookReport found"}, status=404)
 
         serializer = BookReportSerializer(bookReportsList, many=True)
-        return Response({"CommunityList": serializer.data})
+        return Response({"bookReportList": serializer.data})
 
 class LikeBookReportView(APIView):
     @swagger_auto_schema(manual_parameters=[

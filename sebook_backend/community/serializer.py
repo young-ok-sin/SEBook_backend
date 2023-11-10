@@ -8,3 +8,8 @@ class CommunitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Community
         fields = ['title', 'author', 'postNum', 'contents', 'userNum_community', 'isbn13_community']
+
+class ComunityCreateSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = Community
+        fields = '__all__'

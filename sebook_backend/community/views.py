@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Community,User,Book,LikeCommunity
-from .serializer import CommunitySerializer
+from .serializer import CommunitySerializer,ComunityCreateSerialzer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
@@ -18,10 +18,14 @@ class CreateParagraph(APIView):
         contents = request.data.get('contents')
         userNum_community = request.data.get('userNum_community')
         isbn13_community = request.data.get('isbn13_community')
-        
-        # User 모델과 Book 모델의 인스턴스 가져오기
-        user = User.objects.get(userNum=userNum_community)
-        book = Book.objects.get(isbn13=isbn13_community)
+        try:
+            user = User.objects.get(userNum=userNum_community)
+        except User.DoesNotExist:
+            return JsonResponse({"error": "User does not exist."}, status=404)
+        try:
+            book = Book.objects.get(isbn13=isbn13_community)
+        except Book.DoesNotExist:
+            return JsonResponse({"error": "Book does not exist."}, status=404)
         
         community = Community.objects.create(
             contents=contents,
