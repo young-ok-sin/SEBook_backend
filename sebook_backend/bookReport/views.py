@@ -70,7 +70,7 @@ class UserSavedBookReports(APIView):
             user = User.objects.get(userNum=userNum)
             like_bookreports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
             saved_books = [like_bookreport.reportNum_like_bookreport for like_bookreport in like_bookreports]
-            serializer = BookReportSerializer(saved_books, many=True)
+            serializer = BookReportReadSerializer(saved_books, many=True)
             return Response({"likeBookReportList": serializer.data})
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
