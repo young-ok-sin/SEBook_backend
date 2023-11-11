@@ -43,7 +43,6 @@ class CreateBookReport(APIView):
             isbn13_report=book
         )
         
-        # 생성된 BookReport 객체를 직렬화하여 응답 데이터로 반환
         serializer = BookReportSerializer(book_report)
         return JsonResponse(serializer.data)
 
@@ -86,7 +85,7 @@ class UserWriteBookReports(APIView):
         try:
             user = User.objects.get(userNum=userNum)
             bookreports = BookReport.objects.filter(userNum_report=user)
-            serializer = BookReportSerializer(bookreports, many=True)
+            serializer = BookReportReadSerializer(bookreports, many=True)
             return Response({"userBookReportList": serializer.data})
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
@@ -125,7 +124,10 @@ class LikeBookReportView(APIView):
         openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
     ])
     def post(self, request, *args, **kwargs):
-        #data = request.query_params #swagger 테스트 용
+        #swagger 테스트 용
+        #data = request.query_params
+        
+        #프론트 용 
         data = request.data
         try:
             user = User.objects.get(userNum=data['userNum'])

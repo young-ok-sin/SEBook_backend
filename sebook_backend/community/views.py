@@ -16,12 +16,12 @@ class CreateParagraph(APIView):
     ])
     def post(self, request):
         #테스트 용
-        contents = request.GET.get('contents')
-        userNum_community = request.GET.get('userNum_community')
-        isbn13_community = request.GET.get('isbn13_community')
-        # contents = request.data.get('contents')
-        # userNum_community = request.data.get('userNum_community')
-        # isbn13_community = request.data.get('isbn13_community')
+        # contents = request.GET.get('contents')
+        # userNum_community = request.GET.get('userNum_community')
+        # isbn13_community = request.GET.get('isbn13_community')
+        contents = request.data.get('contents')
+        userNum_community = request.data.get('userNum_community')
+        isbn13_community = request.data.get('isbn13_community')
         try:
             user = User.objects.get(userNum=userNum_community)
         except User.DoesNotExist:
