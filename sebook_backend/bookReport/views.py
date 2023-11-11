@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import BookReport,User,Book,LikeBookReport
-from .serializer import BookReportReadSerializer,BookReportSerializer
+from .serializer import BookReportReadSerializer,BookReportSerializer,BookReportTop5ReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
@@ -214,5 +214,5 @@ class SearchBookReportByTitle(APIView):
 class TopRatedBookReports(APIView):
     def get(self, request):
         top_reports = BookReport.objects.annotate(like_count=Count('likebookreport')).order_by('-like_count', 'registDate_report')[:5]
-        serializer = BookReportReadSerializer(top_reports, many=True)
+        serializer = BookReportTop5ReadSerializer(top_reports, many=True)
         return Response(serializer.data, status=200)
