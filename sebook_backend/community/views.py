@@ -37,19 +37,36 @@ class CreateParagraph(APIView):
             isbn13_community=book
         )
         
-        # 생성된 Community 객체를 직렬화하여 응답 데이터로 반환
         serializer = ComunitySerialzer(community)
         return JsonResponse(serializer.data)
 
 class CommunityListRead(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
-        community_list =  Community.objects.all()
+        userNum = request.query_params.get('userNum')
 
-        if not community_list:
-            return Response({"message": "No Community found"}, status=404)
+        # 사용자가 작성한 커뮤니티 글들을 가져옴
+        user_community = Community.objects.filter(userNum_community=userNum)
+        user_community_serializer = CommunityReadSerializer(user_community, many=True)
 
-        serializer = CommunityReadSerializer(community_list, many=True)
-        return Response({"CommunityList": serializer.data})
+        # 사용자가 좋아요한 커뮤니티 글들을 가져옴
+        liked_community = Community.objects.filter(likecommunity__userNum_like_community=userNum)
+        liked_community_serializer = CommunityReadSerializer(liked_community, many=True)
+
+        userLikedPosts = liked_community.values_list('postNum', flat=True)
+        userWrittenPosts = user_community.values_list('postNum', flat=True)
+
+        all_community = Community.objects.all()
+        all_community_serializer = CommunityReadSerializer(all_community, many=True)
+
+        response_data = {
+            "userLikedPosts": list(userLikedPosts),
+            "userWrittenPosts": list(userWrittenPosts),
+            "allPosts": all_community_serializer.data
+        }
+        return Response(response_data)
 
 class LikeCommunityView(APIView):
     @swagger_auto_schema(manual_parameters=[
