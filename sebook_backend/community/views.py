@@ -7,6 +7,7 @@ from .serializer import ComunitySerialzer,CommunityReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
+from django.db.models import Q
 
 class CreateParagraph(APIView):
     @swagger_auto_schema(manual_parameters=[
@@ -141,3 +142,35 @@ class UserWriteCommunity(APIView):
             return Response({"userCommunityList": serializer.data})
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
+
+class SearchCommunityByAuthor(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
+    ])
+    def get(self, request):
+        author = request.query_params.get('author', None)
+        if author is None:
+            return Response({"error": "Author parameter is required"}, status=400)
+
+        communities = Community.objects.filter(Q(isbn13_community__author__icontains=author))
+        if not communities.exists():
+            return Response({"message": f"No results found for author: {author}"}, status=404)
+
+        serializer = CommunityReadSerializer(communities, many=True)
+        return Response(serializer.data, status=200)
+
+class SearchCommunityByTitle(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('title', openapi.IN_QUERY, description="search by title", type=openapi.TYPE_STRING)
+    ])
+    def get(self, request):
+        title = request.query_params.get('title', None)
+        if title is None:
+            return Response({"error": "title parameter is required"}, status=400)
+
+        communities = Community.objects.filter(Q(isbn13_community__title__icontains=title))
+        if not communities.exists():
+            return Response({"message": f"No results found for author: {title}"}, status=404)
+
+        serializer = CommunityReadSerializer(communities, many=True)
+        return Response(serializer.data, status=200)

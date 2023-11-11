@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CreateParagraph,CommunityListRead,LikeCommunityView,UserSavedCommunity,UserWriteCommunity
+from .views import CreateParagraph,CommunityListRead,LikeCommunityView,UserSavedCommunity,UserWriteCommunity,SearchCommunityByAuthor,SearchCommunityByTitle
 
 urlpatterns = [
     path('paragraphCreate', CreateParagraph.as_view(), name='paragraphCreate'),
@@ -7,4 +7,6 @@ urlpatterns = [
     path('paragraphLike',LikeCommunityView.as_view(),name = 'paragraphLike'),
     path('paragraphReadLike',UserSavedCommunity.as_view(),name = 'UserSavedCommunity'),
     path('paragraphReadMy',UserWriteCommunity.as_view(),name = 'UserWriteCommunity'),
+    path('searchParagraphByAuthor',SearchCommunityByAuthor.as_view(),name = 'SearchCommunityByAuthor'),
+    path('searchParagraphByTitle',SearchCommunityByTitle.as_view(),name = 'SearchCommunityByTitle'),
 ]

@@ -45,6 +45,35 @@ class CreateBookReport(APIView):
         
         serializer = BookReportSerializer(book_report)
         return JsonResponse(serializer.data)
+    
+class UpdateBookReport(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('reportNum', openapi.IN_QUERY, description="Report number", type=openapi.TYPE_INTEGER),
+        openapi.Parameter('reportContents', openapi.IN_QUERY, description="Report contents", type=openapi.TYPE_STRING),
+        openapi.Parameter('reportTitle', openapi.IN_QUERY, description="Report title", type=openapi.TYPE_STRING)
+    ])
+    def put(self, request):
+        #swagger테스트 용
+        # reportNum = request.GET.get('reportNum')
+        # reportContents = request.GET.get('reportContents')
+        # reportTitle = request.GET.get('reportTitle')
+        
+        #프론트 용
+        reportNum = request.data.get('reportNum')
+        reportContents = request.data.get('reportContents')
+        reportTitle = request.data.get('reportTitle')
+
+        try:
+            book_report = BookReport.objects.get(reportNum=reportNum)
+        except BookReport.DoesNotExist:
+            return Response({"error": "Book report does not exist"}, status=404)
+
+        book_report.reportContents = reportContents
+        book_report.reportTitle = reportTitle
+        book_report.save()
+
+        serializer = BookReportReadSerializer(book_report)
+        return Response(serializer.data)
 
 class DeleteBookReport(APIView):
     @swagger_auto_schema(manual_parameters=[
