@@ -110,3 +110,34 @@ class LikeCommunityView(APIView):
             return Response({"message": "LikeCommunity removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeCommunity not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class UserSavedCommunity(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
+    ])
+    def get(self, request):
+        userNum = request.query_params.get('userNum')
+
+        try:
+            user = User.objects.get(userNum=userNum)
+            saved_communities = LikeCommunity.objects.filter(userNum_like_community=user)
+            saved_posts = [like_community.postNum_like_community for like_community in saved_communities]
+            serializer = CommunityReadSerializer(saved_posts, many=True)
+            return Response({"savedCommunityList": serializer.data})
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
+
+class UserWriteCommunity(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
+    ])
+    def get(self, request):
+        userNum = request.query_params.get('userNum')
+
+        try:
+            user = User.objects.get(userNum=userNum)
+            user_community = Community.objects.filter(userNum_community=user)
+            serializer = CommunityReadSerializer(user_community, many=True)
+            return Response({"userCommunityList": serializer.data})
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=404)
