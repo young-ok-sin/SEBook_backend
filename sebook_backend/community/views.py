@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Community,User,Book,LikeCommunity
-from .serializer import CommunitySerializer,ComunityCreateSerialzer
+from .serializer import ComunitySerialzer,CommunityReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
@@ -15,9 +15,13 @@ class CreateParagraph(APIView):
         openapi.Parameter('isbn13_community', openapi.IN_QUERY, description="isbn13_community", type=openapi.TYPE_STRING)
     ])
     def post(self, request):
-        contents = request.data.get('contents')
-        userNum_community = request.data.get('userNum_community')
-        isbn13_community = request.data.get('isbn13_community')
+        #테스트 용
+        contents = request.GET.get('contents')
+        userNum_community = request.GET.get('userNum_community')
+        isbn13_community = request.GET.get('isbn13_community')
+        # contents = request.data.get('contents')
+        # userNum_community = request.data.get('userNum_community')
+        # isbn13_community = request.data.get('isbn13_community')
         try:
             user = User.objects.get(userNum=userNum_community)
         except User.DoesNotExist:
@@ -34,7 +38,7 @@ class CreateParagraph(APIView):
         )
         
         # 생성된 Community 객체를 직렬화하여 응답 데이터로 반환
-        serializer = CommunitySerializer(community)
+        serializer = ComunitySerialzer(community)
         return JsonResponse(serializer.data)
 
 class CommunityListRead(APIView):
@@ -44,7 +48,7 @@ class CommunityListRead(APIView):
         if not community_list:
             return Response({"message": "No Community found"}, status=404)
 
-        serializer = CommunitySerializer(community_list, many=True)
+        serializer = CommunityReadSerializer(community_list, many=True)
         return Response({"CommunityList": serializer.data})
 
 class LikeCommunityView(APIView):

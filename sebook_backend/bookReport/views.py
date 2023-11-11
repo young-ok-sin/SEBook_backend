@@ -96,7 +96,7 @@ class ReadAllBookReport(APIView):
         openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
     ])
     def get(self, request):
-        reportNum = request.query_params.get('userNum')  # 로그인한 사용자의 번호(reportNum)
+        reportNum = request.query_params.get('userNum')
         
         # 사용자가 작성한 독후감들을 가져옴
         user_reports = BookReport.objects.filter(userNum_report=reportNum)
@@ -106,9 +106,16 @@ class ReadAllBookReport(APIView):
         liked_reports = BookReport.objects.filter(likebookreport__userNum_like_bookreport=reportNum)
         liked_reports_serializer = BookReportReadSerializer(liked_reports, many=True)
         
+        userLikeReports = liked_reports.values_list('reportNum', flat=True)
+        userWriteReports = user_reports.values_list('reportNum', flat=True)
+        
+        all_reports = BookReport.objects.all()
+        all_reports_serializer = BookReportReadSerializer(all_reports, many=True)
+        
         response_data = {
-            "user_reports": user_reports_serializer.data,
-            "liked_reports": liked_reports_serializer.data
+            "userLikeReports": list(userLikeReports),
+            "userWriteReports": list(userWriteReports),
+            "allReports": all_reports_serializer.data
         }
         return Response(response_data)
 

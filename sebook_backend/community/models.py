@@ -10,6 +10,7 @@ class Community(models.Model):
     userNum_community = models.ForeignKey(User,on_delete=models.CASCADE,db_column='userNum_community')
     isbn13_community = models.ForeignKey(Book,on_delete=models.CASCADE,db_column='isbn13_community')
     registDate_community = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
         managed = False
         db_table = 'community'
