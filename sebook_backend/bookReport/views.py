@@ -7,8 +7,10 @@ from .serializer import BookReportReadSerializer,BookReportSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
 from rest_framework import status
+from django.db.models import Q
+from django.db.models import Count
 
-# Create your views here.
+
 class CreateBookReport(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('userNum_report', openapi.IN_QUERY, description="userNum_report", type=openapi.TYPE_INTEGER),
@@ -154,10 +156,10 @@ class LikeBookReportView(APIView):
     ])
     def post(self, request, *args, **kwargs):
         #swagger 테스트 용
-        #data = request.query_params
+        data = request.query_params
         
         #프론트 용 
-        data = request.data
+        #data = request.data
         try:
             user = User.objects.get(userNum=data['userNum'])
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
@@ -192,3 +194,25 @@ class LikeBookReportView(APIView):
             return Response({"message": "LikeBookReport removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeBookReport not found"}, status=status.HTTP_404_NOT_FOUND)
+
+class SearchBookReportByTitle(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING)
+    ])
+    def get(self, request):
+        title = request.query_params.get('title', None)
+        if title is None:
+            return Response({"error": "title parameter is required"}, status=400)
+
+        bookreports = BookReport.objects.filter(reportTitle__icontains=title)
+        if not bookreports.exists():
+            return Response({"message": f"No results found for title: {title}"}, status=404)
+
+        serializer = BookReportReadSerializer(bookreports, many=True)
+        return Response(serializer.data, status=200)
+
+class TopRatedBookReports(APIView):
+    def get(self, request):
+        top_reports = BookReport.objects.annotate(like_count=Count('likebookreport')).order_by('-like_count', 'registDate_report')[:5]
+        serializer = BookReportReadSerializer(top_reports, many=True)
+        return Response(serializer.data, status=200)

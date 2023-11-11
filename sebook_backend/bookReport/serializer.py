@@ -24,4 +24,4 @@ class BookReportReadSerializer(serializers.ModelSerializer):
 class BookReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookReport
-        fields = '__all__'
+        fields = '__all__' 
