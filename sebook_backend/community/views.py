@@ -174,3 +174,17 @@ class SearchCommunityByTitle(APIView):
 
         serializer = CommunityReadSerializer(communities, many=True)
         return Response(serializer.data, status=200)
+
+class DeleteCommunity(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
+    ])
+    def delete(self, request):
+        community_num = request.query_params
+        try:
+            community = Community.objects.get(postNum=community_num['postNum'])
+        except Community.DoesNotExist:
+            return Response({"error": "community not found"}, status=status.HTTP_404_NOT_FOUND)
+        community.delete()
+        return Response({"message": "community deleted"}, status=status.HTTP_204_NO_CONTENT)
+    
