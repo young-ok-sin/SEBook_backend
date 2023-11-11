@@ -24,6 +24,7 @@ schema_url_patterns = [
     path('book/', include('book.urls')),
     path('community/', include('community.urls')),
     path('bookReport/', include('bookReport.urls')), 
+    path('user/', include('user.urls')), 
     ]
 
 schema_view_v1 = get_schema_view(
@@ -47,4 +48,5 @@ urlpatterns = [
     path('book/', include('book.urls')),
     path('community/', include('community.urls')), 
     path('bookReport/', include('bookReport.urls')), 
+    path('user/', include('user.urls')), 
 ]
