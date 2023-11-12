@@ -43,7 +43,7 @@ class RecommendView(APIView):
 
 class BookListRead(APIView):
     def get(self, request):
-        book_list = Book.objects.all()
+        book_list = Book.objects.annotate(num_likes=Count('likebook'))
 
         if not book_list:
             return Response({"message": "No books found"}, status=404)
