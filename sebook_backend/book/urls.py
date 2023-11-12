@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import BookListRead,UserSavedBooks,SearchBookByTitle,RecommendView,LikeBookView,SearchBookByAuthor
+from .views import BookListRead,UserSavedBooks,SearchBookByTitle,RecommendView,LikeBookView,SearchBookByAuthor,TopLikedBooks
 from . import views
 
 
@@ -10,4 +10,5 @@ urlpatterns = [
     path('likeBookListRead',UserSavedBooks.as_view(), name='user-like-book'),
     path('searchBookByAuthor', SearchBookByAuthor.as_view(), name='book_search_author'),
     path('searchBookByTitle',SearchBookByTitle.as_view(),name = 'book_search_title'),
+    path('BestsellerListRead',TopLikedBooks.as_view(),name = 'BestsellerListRead'),
 ]
