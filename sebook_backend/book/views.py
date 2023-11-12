@@ -15,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.db import connection
 from django.db.models import Q
-from django.db.models import Count
+from django.db.models import F
 
 class RecommendView(APIView):
     def __init__(self, **kwargs):
@@ -209,6 +209,6 @@ class SearchBookByTitle(APIView):
     
 class TopLikedBooks(APIView):
     def get(self, request):
-        top_liked_books = Book.objects.annotate(num_likes=Count('likebook')).order_by('-num_likes', 'isbn13')[:5] #좋아요 내림차순, isbn13 오름차순 정렬
+        top_liked_books = Book.objects.order_by('-num_likes', 'isbn13')[:5]
         serializer = BookSerializer(top_liked_books, many=True)
-        return Response(serializer.data)
+        return Response({"bestsellerList":serializer.data})
