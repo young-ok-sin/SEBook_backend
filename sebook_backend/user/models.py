@@ -11,3 +11,10 @@ class User(models.Model):
         managed = False
         db_table = 'user'
         
+    @staticmethod
+    def authenticate_user(userId, password):
+        try:
+            user = User.objects.get(userId=userId, password=password)
+            return user.userNum
+        except User.DoesNotExist:
+            return None
