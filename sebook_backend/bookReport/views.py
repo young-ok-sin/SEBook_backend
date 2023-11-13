@@ -156,10 +156,10 @@ class LikeBookReportView(APIView):
     ])
     def post(self, request, *args, **kwargs):
         #swagger 테스트 용
-        data = request.query_params
+        #data = request.query_params
         
         #프론트 용 
-        #data = request.data
+        data = request.data
         try:
             user = User.objects.get(userNum=data['userNum'])
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
