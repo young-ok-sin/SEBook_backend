@@ -40,18 +40,23 @@ class LoginView(APIView):
         openapi.Parameter('password', openapi.IN_QUERY, description="User pw", type=openapi.TYPE_STRING)
     ])
     def post(self, request, *args, **kwargs):
-        #swagger test
+        # swagger test
         # userId = request.GET.get('userId')
         # password = request.GET.get('password')
-        
+
         userId = request.data.get('userId')
         password = request.data.get('password')
 
-        userNum = User.authenticate_user(userId, password)
-        if userNum is not None:
-            return Response({"userNum": userNum}, status=200)
+        user = User.authenticate_user(userId, password)
+
+        if user is not None:
+            return Response({
+                "userNum": user.userNum,
+                "userName": user.name
+            }, status=200)
         else:
             return Response({"error": "Invalid credentials"}, status=401)
+
 
 # class LogoutView(APIView):
 #     def post(self, request, *args, **kwargs):

@@ -15,6 +15,6 @@ class User(models.Model):
     def authenticate_user(userId, password):
         try:
             user = User.objects.get(userId=userId, password=password)
-            return user.userNum
+            return user
         except User.DoesNotExist:
             return None
