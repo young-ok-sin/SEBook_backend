@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import BookReport,LikeBookReport,User
+from .models import BookReport, Book, LikeBookReport
+from user.models import CustomUser
+
 
 class BookReportReadSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='isbn13_report.title')
@@ -14,7 +16,7 @@ class BookReportReadSerializer(serializers.ModelSerializer):
 
     def get_user_liked(self, book_report):
         liked_users = LikeBookReport.objects.filter(reportNum_like_bookreport=book_report).values_list('userNum_like_bookreport_id', flat=True)
-        user_ids = User.objects.filter(userNum__in=liked_users).values_list('userNum', flat=True)
+        user_ids = CustomUser.objects.filter(userNum__in=liked_users).values_list('userNum', flat=True)
         return list(user_ids)
     class Meta:
         model = BookReport
@@ -35,7 +37,7 @@ class BookReportTop5ReadSerializer(serializers.ModelSerializer):
 
     def get_user_liked(self, book_report):
         liked_users = LikeBookReport.objects.filter(reportNum_like_bookreport=book_report).values_list('userNum_like_bookreport_id', flat=True)
-        user_ids = User.objects.filter(userNum__in=liked_users).values_list('userNum', flat=True)
+        user_ids = CustomUser.objects.filter(userNum__in=liked_users).values_list('userNum', flat=True)
         return list(user_ids)
     class Meta:
         model = BookReport

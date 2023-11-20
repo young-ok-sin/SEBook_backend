@@ -1,12 +1,12 @@
 from django.db import models
-from user.models import User
+from user.models import CustomUser
 from book.models import Book
 from django.utils import timezone
 # Create your models here.
 
 class BookReport(models.Model):
     reportNum = models.AutoField(primary_key=True, null=False)
-    userNum_report = models.ForeignKey(User, on_delete=models.CASCADE, db_column='userNum_report')
+    userNum_report = models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column='userNum_report')
     reportContents = models.TextField(null=False)
     reportTitle = models.TextField(null=False)
     registDate_report = models.DateTimeField(null=False)
@@ -23,7 +23,7 @@ class BookReport(models.Model):
 
 class LikeBookReport(models.Model):
     like_bookreportNum = models.AutoField(primary_key=True)
-    userNum_like_bookreport = models.ForeignKey(User,on_delete=models.CASCADE, db_column='userNum_like_bookreport')
+    userNum_like_bookreport = models.ForeignKey(CustomUser,on_delete=models.CASCADE, db_column='userNum_like_bookreport')
     reportNum_like_bookreport = models.ForeignKey(BookReport,on_delete=models.CASCADE,db_column='reportNum_like_bookreport')
     class Meta:
         managed = False

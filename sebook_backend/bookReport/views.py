@@ -2,7 +2,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import BookReport,User,Book,LikeBookReport
+from .models import BookReport, Book, LikeBookReport
+from user.models import CustomUser
+
 from .serializer import BookReportReadSerializer,BookReportSerializer,BookReportTop5ReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -30,8 +32,8 @@ class CreateBookReport(APIView):
         isbn13_report = request.data.get('isbn13_report')
         
         try:
-            user = User.objects.get(userNum=userNum_report)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(userNum=userNum_report)
+        except CustomUser.DoesNotExist:
             return JsonResponse({"error": "User does not exist."}, status=404)
         try:
             book = Book.objects.get(isbn13=isbn13_report)
@@ -98,12 +100,12 @@ class UserSavedBookReports(APIView):
         userNum = request.query_params.get('userNum')
         
         try:
-            user = User.objects.get(userNum=userNum)
+            user = CustomUser.objects.get(userNum=userNum)
             like_bookreports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
             saved_books = [like_bookreport.reportNum_like_bookreport for like_bookreport in like_bookreports]
             serializer = BookReportReadSerializer(saved_books, many=True)
             return Response({"likeBookReportList": serializer.data})
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
 class UserWriteBookReports(APIView):
@@ -114,11 +116,11 @@ class UserWriteBookReports(APIView):
         userNum = request.query_params.get('userNum')
         
         try:
-            user = User.objects.get(userNum=userNum)
+            user = CustomUser.objects.get(userNum=userNum)
             bookreports = BookReport.objects.filter(userNum_report=user)
             serializer = BookReportReadSerializer(bookreports, many=True)
             return Response({"userBookReportList": serializer.data})
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
 class ReadAllBookReport(APIView):
@@ -161,9 +163,9 @@ class LikeBookReportView(APIView):
         #프론트 용 
         data = request.data
         try:
-            user = User.objects.get(userNum=data['userNum'])
+            user = CustomUser.objects.get(userNum=data['userNum'])
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
-        except (User.DoesNotExist, BookReport.DoesNotExist):
+        except (CustomUser.DoesNotExist, BookReport.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like_bookReport_exists = LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).exists()
@@ -182,9 +184,9 @@ class LikeBookReportView(APIView):
     def delete(self, request, *args, **kwargs):
         data = request.query_params #swagger 테스트 용
         try:
-            user = User.objects.get(userNum=data['userNum'])
+            user = CustomUser.objects.get(userNum=data['userNum'])
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
-        except (User.DoesNotExist, BookReport.DoesNotExist):
+        except (CustomUser.DoesNotExist, BookReport.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like_bookReport_exists = LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).exists()

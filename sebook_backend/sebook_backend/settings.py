@@ -79,10 +79,9 @@ MIDDLEWARE = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
 }
-
 ROOT_URLCONF = 'sebook_backend.urls'
 
 TEMPLATES = [
@@ -160,9 +159,10 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
-
-
+# AUTHENTICATION_BACKENDS = [
+#     'user.path.CustomAuthBackend',
+#     'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
+# ]
 
 
 #------------------------------내가 입력한거
@@ -191,7 +191,18 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
+CSRF_USE_SESSIONS = True
+SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+SESSION_COOKIE_SAMESITE = None
+
+SESSION_COOKIE_HTTPONL = False
+SESSION_COOKIE_SECURE = False
+
+
 # CORS 추가
+CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = (
     'http://172.30.66.199:8000','http://172.20.10.6:8000','http://127.0.0.1:8000', 'http://localhost:3000')
-CORS_ALLOW_CREDENTIALS = True
+
+
+AUTH_USER_MODEL = 'user.CustomUser'

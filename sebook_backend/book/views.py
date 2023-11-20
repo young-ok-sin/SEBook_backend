@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .models import Book, LikeBook, User
+from .models import Book, LikeBook
+from user.models import CustomUser
+
 from .serializer import BookSerializer
 from .BookRecommender import BookRecommender
 from django.http import HttpResponse
@@ -74,10 +76,13 @@ class LikeBookView(APIView):
     def post(self, request, *args, **kwargs):
         #data = request.query_params #swagger 테스트 용
         data = request.data
+        
         try:
-            user = User.objects.get(userNum=data['userNum'])
+            # user = CustomUser.objects.get(userNum=data['userNum'])
+            user = request.user
+            print("req user",user)
             book = Book.objects.get(isbn13=data['isbn13'])
-        except (User.DoesNotExist, Book.DoesNotExist):
+        except (CustomUser.DoesNotExist, Book.DoesNotExist):
             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like_book, created = LikeBook.objects.get_or_create(userNum_like_book=user, isbn13_like_book=book)
@@ -97,9 +102,9 @@ class LikeBookView(APIView):
     def delete(self, request, *args, **kwargs):
         data = request.query_params
         try:
-            user = User.objects.get(userNum=data['userNum'])
+            user = CustomUser.objects.get(userNum=data['userNum'])
             book = Book.objects.get(isbn13=data['isbn13'])
-        except (User.DoesNotExist, Book.DoesNotExist):
+        except (CustomUser.DoesNotExist, Book.DoesNotExist):
             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like_book = LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).first()
@@ -111,6 +116,7 @@ class LikeBookView(APIView):
             return Response({"message": "LikeBook removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeBook not found"}, status=status.HTTP_404_NOT_FOUND)
+
 
 # class LikeBookView(APIView):
 #     @swagger_auto_schema(manual_parameters=[
@@ -163,7 +169,7 @@ class UserSavedBooks(APIView):
 
         userNum = request.query_params.get('userNum')
         
-        user = User.objects.get(userNum=userNum)
+        user = CustomUser.objects.get(userNum=userNum)
         like_books = LikeBook.objects.filter(userNum_like_book=user)
         
         saved_books = [like_book.isbn13_like_book for like_book in like_books]

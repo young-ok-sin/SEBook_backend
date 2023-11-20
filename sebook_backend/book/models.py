@@ -1,5 +1,6 @@
 from django.db import models
-from user.models import User
+from user.models import CustomUser
+
 
 class Category(models.Model):
     categoryId = models.IntegerField(primary_key=True,null = False)
@@ -37,7 +38,7 @@ class Book(models.Model):
         
 class LikeBook(models.Model):
     like_bookNum = models.AutoField(primary_key=True)
-    userNum_like_book= models.ForeignKey(User, on_delete=models.CASCADE, db_column='userNum_like_book')
+    userNum_like_book= models.ForeignKey(CustomUser, on_delete=models.CASCADE, db_column='userNum_like_book')
     isbn13_like_book = models.ForeignKey(Book, on_delete=models.CASCADE, db_column='isbn13_like_book')
     
     class Meta:

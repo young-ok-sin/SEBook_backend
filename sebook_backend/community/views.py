@@ -2,7 +2,9 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import Community,User,Book,LikeCommunity
+from .models import Community, Book, LikeCommunity
+from user.models import CustomUser
+
 from .serializer import ComunitySerialzer,CommunityReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -24,8 +26,8 @@ class CreateParagraph(APIView):
         userNum_community = request.data.get('userNum_community')
         isbn13_community = request.data.get('isbn13_community')
         try:
-            user = User.objects.get(userNum=userNum_community)
-        except User.DoesNotExist:
+            user = CustomUser.objects.get(userNum=userNum_community)
+        except CustomUser.DoesNotExist:
             return JsonResponse({"error": "User does not exist."}, status=404)
         try:
             book = Book.objects.get(isbn13=isbn13_community)
@@ -78,9 +80,9 @@ class LikeCommunityView(APIView):
         #data = request.query_params #swagger 테스트 용
         data = request.data
         try:
-            user = User.objects.get(userNum=data['userNum'])
+            user = CustomUser.objects.get(userNum=data['userNum'])
             community = Community.objects.get(postNum=data['postNum'])
-        except (User.DoesNotExist, Community.DoesNotExist):
+        except (CustomUser.DoesNotExist, Community.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like_community_exists = LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).exists()
@@ -99,9 +101,9 @@ class LikeCommunityView(APIView):
     def delete(self, request, *args, **kwargs):
         data = request.query_params #swagger 테스트 용
         try:
-            user = User.objects.get(userNum=data['userNum'])
+            user = CustomUser.objects.get(userNum=data['userNum'])
             community = Community.objects.get(postNum=data['postNum'])
-        except (User.DoesNotExist, Community.DoesNotExist):
+        except (CustomUser.DoesNotExist, Community.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
         like_community_exists = LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).exists()
@@ -120,12 +122,12 @@ class UserSavedCommunity(APIView):
         userNum = request.query_params.get('userNum')
 
         try:
-            user = User.objects.get(userNum=userNum)
+            user = CustomUser.objects.get(userNum=userNum)
             saved_communities = LikeCommunity.objects.filter(userNum_like_community=user)
             saved_posts = [like_community.postNum_like_community for like_community in saved_communities]
             serializer = CommunityReadSerializer(saved_posts, many=True)
             return Response({"savedCommunityList": serializer.data})
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
 class UserWriteCommunity(APIView):
@@ -136,11 +138,11 @@ class UserWriteCommunity(APIView):
         userNum = request.query_params.get('userNum')
 
         try:
-            user = User.objects.get(userNum=userNum)
+            user = CustomUser.objects.get(userNum=userNum)
             user_community = Community.objects.filter(userNum_community=user)
             serializer = CommunityReadSerializer(user_community, many=True)
             return Response({"userCommunityList": serializer.data})
-        except User.DoesNotExist:
+        except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
 class SearchCommunityByAuthor(APIView):

@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from .models import Community,LikeCommunity,User
+from .models import Community, LikeCommunity
+from user.models import CustomUser
+
 
 class CommunityReadSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='isbn13_community.title')
@@ -14,7 +16,7 @@ class CommunityReadSerializer(serializers.ModelSerializer):
 
     def get_user_liked(self, community):
         liked_users = LikeCommunity.objects.filter(postNum_like_community=community).values_list('userNum_like_community_id', flat=True)
-        user_ids = User.objects.filter(userNum__in=liked_users).values_list('userNum', flat=True)
+        user_ids = CustomUser.objects.filter(userNum__in=liked_users).values_list('userNum', flat=True)
         return list(user_ids)
 
     class Meta:

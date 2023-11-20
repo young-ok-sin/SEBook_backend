@@ -1,20 +1,32 @@
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.utils import timezone
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-# Create your models here.
-class User(models.Model):
-    userNum = models.AutoField(primary_key=True,null=False)
-    userId = models.CharField(max_length=45, null = False)
-    password = models.CharField(max_length=45, null = False)
-    name = models.CharField(max_length=20, null = False)
+class UserManager(BaseUserManager):
+    def create_user(self, userId, password=None, **extra_fields):
+        if not userId:
+            raise ValueError('The User ID field must be set')
+        user = self.model(userId=userId, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, userId, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(userId, password, **extra_fields)
+
+class CustomUser(AbstractBaseUser):
+    userNum = models.AutoField(primary_key=True, null=False)
+    userId = models.CharField(max_length=45, unique=True,default="99999")
+    password = models.CharField(max_length=128, null=False, default='default-password')
+    name = models.CharField(max_length=20, default="홍길동")
+    last_login = models.DateTimeField(default=timezone.now)
     
+    objects = UserManager()
+
+    USERNAME_FIELD = 'userId'
+
     class Meta:
-        managed = False
         db_table = 'user'
-        
-    @staticmethod
-    def authenticate_user(userId, password):
-        try:
-            user = User.objects.get(userId=userId, password=password)
-            return user
-        except User.DoesNotExist:
-            return None
