@@ -14,19 +14,16 @@ from django.db.models import Q
 class CreateParagraph(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('contents', openapi.IN_QUERY, description="Paragraph", type=openapi.TYPE_STRING),
-        openapi.Parameter('userNum_community', openapi.IN_QUERY, description="userNum_community", type=openapi.TYPE_INTEGER),
         openapi.Parameter('isbn13_community', openapi.IN_QUERY, description="isbn13_community", type=openapi.TYPE_STRING)
     ])
     def post(self, request):
         #테스트 용
         # contents = request.GET.get('contents')
-        # userNum_community = request.GET.get('userNum_community')
         # isbn13_community = request.GET.get('isbn13_community')
         contents = request.data.get('contents')
-        userNum_community = request.data.get('userNum_community')
         isbn13_community = request.data.get('isbn13_community')
         try:
-            user = CustomUser.objects.get(userNum=userNum_community)
+            user = request.user
         except CustomUser.DoesNotExist:
             return JsonResponse({"error": "User does not exist."}, status=404)
         try:
@@ -44,11 +41,8 @@ class CreateParagraph(APIView):
         return JsonResponse(serializer.data)
 
 class CommunityListRead(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-        userNum = request.query_params.get('userNum')
+        userNum = request.user
 
         # 사용자가 작성한 커뮤니티 글들을 가져옴
         user_community = Community.objects.filter(userNum_community=userNum)
@@ -73,14 +67,13 @@ class CommunityListRead(APIView):
 
 class LikeCommunityView(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
         openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
     ])
     def post(self, request, *args, **kwargs):
         #data = request.query_params #swagger 테스트 용
         data = request.data
         try:
-            user = CustomUser.objects.get(userNum=data['userNum'])
+            user = request.user
             community = Community.objects.get(postNum=data['postNum'])
         except (CustomUser.DoesNotExist, Community.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -99,9 +92,9 @@ class LikeCommunityView(APIView):
         openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
     ])
     def delete(self, request, *args, **kwargs):
-        data = request.query_params #swagger 테스트 용
+        data = request.query_params 
         try:
-            user = CustomUser.objects.get(userNum=data['userNum'])
+            user = request.user
             community = Community.objects.get(postNum=data['postNum'])
         except (CustomUser.DoesNotExist, Community.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -115,14 +108,9 @@ class LikeCommunityView(APIView):
             return Response({"error": "LikeCommunity not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class UserSavedCommunity(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-        userNum = request.query_params.get('userNum')
-
         try:
-            user = CustomUser.objects.get(userNum=userNum)
+            user = request.user
             saved_communities = LikeCommunity.objects.filter(userNum_like_community=user)
             saved_posts = [like_community.postNum_like_community for like_community in saved_communities]
             serializer = CommunityReadSerializer(saved_posts, many=True)
@@ -131,14 +119,9 @@ class UserSavedCommunity(APIView):
             return Response({"error": "User not found"}, status=404)
 
 class UserWriteCommunity(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-        userNum = request.query_params.get('userNum')
-
         try:
-            user = CustomUser.objects.get(userNum=userNum)
+            user = request.user
             user_community = Community.objects.filter(userNum_community=user)
             serializer = CommunityReadSerializer(user_community, many=True)
             return Response({"userCommunityList": serializer.data})

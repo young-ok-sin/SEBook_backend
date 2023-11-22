@@ -15,24 +15,21 @@ from django.db.models import Count
 
 class CreateBookReport(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum_report', openapi.IN_QUERY, description="userNum_report", type=openapi.TYPE_INTEGER),
         openapi.Parameter('reportContents', openapi.IN_QUERY, description="reportContents", type=openapi.TYPE_STRING),
         openapi.Parameter('reportTitle', openapi.IN_QUERY, description="reportTitle", type=openapi.TYPE_STRING),
         openapi.Parameter('isbn13_report', openapi.IN_QUERY, description="isbn13_report", type=openapi.TYPE_STRING)
     ])
     def post(self, request):
         #테스트 용
-        # userNum_report = request.GET.get('userNum_report')
         # reportContents = request.GET.get('reportContents')
         # reportTitle = request.GET.get('reportTitle')
         # isbn13_report = request.GET.get('isbn13_report')
-        userNum_report = request.data.get('userNum_report')
         reportContents = request.data.get('reportContents')
         reportTitle = request.data.get('reportTitle')
         isbn13_report = request.data.get('isbn13_report')
         
         try:
-            user = CustomUser.objects.get(userNum=userNum_report)
+            user = request.user
         except CustomUser.DoesNotExist:
             return JsonResponse({"error": "User does not exist."}, status=404)
         try:
@@ -93,14 +90,9 @@ class DeleteBookReport(APIView):
         return Response({"message": "BookReport deleted"}, status=status.HTTP_204_NO_CONTENT)
     
 class UserSavedBookReports(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-        userNum = request.query_params.get('userNum')
-        
         try:
-            user = CustomUser.objects.get(userNum=userNum)
+            user = request.user
             like_bookreports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
             saved_books = [like_bookreport.reportNum_like_bookreport for like_bookreport in like_bookreports]
             serializer = BookReportReadSerializer(saved_books, many=True)
@@ -109,14 +101,9 @@ class UserSavedBookReports(APIView):
             return Response({"error": "User not found"}, status=404)
 
 class UserWriteBookReports(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-        userNum = request.query_params.get('userNum')
-        
         try:
-            user = CustomUser.objects.get(userNum=userNum)
+            user = request.user
             bookreports = BookReport.objects.filter(userNum_report=user)
             serializer = BookReportReadSerializer(bookreports, many=True)
             return Response({"userBookReportList": serializer.data})
@@ -124,11 +111,8 @@ class UserWriteBookReports(APIView):
             return Response({"error": "User not found"}, status=404)
 
 class ReadAllBookReport(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-        reportNum = request.query_params.get('userNum')
+        reportNum = request.user
         
         # 사용자가 작성한 독후감들을 가져옴
         user_reports = BookReport.objects.filter(userNum_report=reportNum)
@@ -152,10 +136,6 @@ class ReadAllBookReport(APIView):
         return Response(response_data)
 
 class LikeBookReportView(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
-        openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
-    ])
     def post(self, request, *args, **kwargs):
         #swagger 테스트 용
         #data = request.query_params
@@ -163,7 +143,7 @@ class LikeBookReportView(APIView):
         #프론트 용 
         data = request.data
         try:
-            user = CustomUser.objects.get(userNum=data['userNum'])
+            user = request.user
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
         except (CustomUser.DoesNotExist, BookReport.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -178,13 +158,12 @@ class LikeBookReportView(APIView):
             return Response({"message": "LikeBookReport created successfully"}, status=status.HTTP_201_CREATED)
     
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
         openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
     ])
     def delete(self, request, *args, **kwargs):
         data = request.query_params #swagger 테스트 용
         try:
-            user = CustomUser.objects.get(userNum=data['userNum'])
+            user = request.user
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
         except (CustomUser.DoesNotExist, BookReport.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)

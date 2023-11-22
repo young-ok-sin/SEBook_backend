@@ -42,7 +42,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['172.30.66.199',
                 '172.20.10.6',
-                '127.0.0.1',]
+                '127.0.0.1',
+                'localhost:3000',]
 
 
 # Application definition
@@ -159,10 +160,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# AUTHENTICATION_BACKENDS = [
-#     'user.path.CustomAuthBackend',
-#     'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
-# ]
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
+]
 
 
 #------------------------------내가 입력한거
@@ -201,8 +201,14 @@ SESSION_COOKIE_SECURE = False
 
 # CORS 추가
 CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = False
+
 CORS_ORIGIN_WHITELIST = (
-    'http://172.30.66.199:8000','http://172.20.10.6:8000','http://127.0.0.1:8000', 'http://localhost:3000')
+    'http://172.30.66.199:8000','http://172.20.10.6:8000','http://127.0.0.1:3000', 'http://localhost:3000')
 
 
 AUTH_USER_MODEL = 'user.CustomUser'
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://127.0.0.1:3000'
+]

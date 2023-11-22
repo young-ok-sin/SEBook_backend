@@ -4,7 +4,7 @@ from . import views
 
 
 urlpatterns = [
-    path('recommendBook/<int:userNum>', RecommendView.as_view(), name='recommend'),
+    path('recommendBook', RecommendView.as_view(), name='recommend'),
     path('bookLike', LikeBookView.as_view(),name='like_book'),
     path('bookListRead', BookListRead.as_view(), name='book_list_read'),
     path('likeBookListRead',UserSavedBooks.as_view(), name='user-like-book'),

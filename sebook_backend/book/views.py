@@ -17,6 +17,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.db import connection
 from django.db.models import Q
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import F
 
 class RecommendView(APIView):
@@ -53,56 +54,36 @@ class BookListRead(APIView):
         serializer = BookSerializer(book_list, many=True)
         return Response({"bookList": serializer.data})
 
-# class RecommendView(APIView):
-#     def __init__(self, **kwargs):
-#         super().__init__(**kwargs)
-#         self.recommender = BookRecommender()  # 앱이 시작할 때 한 번만 초기화
-#     # def get(self, request, *args, **kwargs):
-#     #     userNum = kwargs.get('userNum')
-#     #     recommendations = self.recommender.recommend_books(userNum)
-
-#     #     return HttpResponse(json.dumps({'recommendations': recommendations}, ensure_ascii=False), content_type='application/json; charset=utf8') # 쿼리스트링 사용 시
-#     def get(self, request, *args, **kwargs): # params 사용 시
-#         userNum = request.GET.get('userNum')
-#         recommendations = self.recommender.recommend_books(userNum)
-
-#         return JsonResponse({'recommendations': recommendations}, safe=False)
-
 class LikeBookView(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
         openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
     ])
     def post(self, request, *args, **kwargs):
-        #data = request.query_params #swagger 테스트 용
+        #data = request.query_params # for swagger test
         data = request.data
-        
         try:
-            # user = CustomUser.objects.get(userNum=data['userNum'])
             user = request.user
             print("req user",user)
             book = Book.objects.get(isbn13=data['isbn13'])
         except (CustomUser.DoesNotExist, Book.DoesNotExist):
             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        like_book, created = LikeBook.objects.get_or_create(userNum_like_book=user, isbn13_like_book=book)
+        created = LikeBook.objects.get_or_create(userNum_like_book=user, isbn13_like_book=book)
 
         if not created:
             return Response({"error": "LikeBook already exists"}, status=status.HTTP_400_BAD_REQUEST)
         
         book.num_likes += 1  # num_likes 필드 업데이트
         book.save()
-
         return Response({"message": "LikeBook created successfully"}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
-        openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
+    openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
     ])
     def delete(self, request, *args, **kwargs):
         data = request.query_params
         try:
-            user = CustomUser.objects.get(userNum=data['userNum'])
+            user = request.user
             book = Book.objects.get(isbn13=data['isbn13'])
         except (CustomUser.DoesNotExist, Book.DoesNotExist):
             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -117,59 +98,9 @@ class LikeBookView(APIView):
         else:
             return Response({"error": "LikeBook not found"}, status=status.HTTP_404_NOT_FOUND)
 
-
-# class LikeBookView(APIView):
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
-#         openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
-#     ])
-#     def post(self, request, *args, **kwargs):
-#         # data = request.query_params #swagger 테스트 용
-#         data = request.data
-#         try:
-#             user = User.objects.get(userNum=data['userNum'])
-#             book = Book.objects.get(isbn13=data['isbn13'])
-#         except (User.DoesNotExist, Book.DoesNotExist):
-#             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
-
-#         like_book_exists = LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).exists()
-
-#         if like_book_exists:
-#             return Response({"error": "LikeBook already exists"}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             like_book = LikeBook(userNum_like_book=user, isbn13_like_book=book)
-#             like_book.save()
-#             return Response({"message": "LikeBook created successfully"}, status=status.HTTP_201_CREATED)
-    
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
-#         openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
-#     ])
-#     def delete(self, request, *args, **kwargs):
-#         data = request.query_params #swagger 테스트 용
-#         try:
-#             user = User.objects.get(userNum=data['userNum'])
-#             book = Book.objects.get(isbn13=data['isbn13'])
-#         except (User.DoesNotExist, Book.DoesNotExist):
-#             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
-
-#         like_book_exists = LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).exists()
-
-#         if like_book_exists:
-#             LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).delete()
-#             return Response({"message": "LikeBook removed successfully"}, status=status.HTTP_200_OK)
-#         else:
-#             return Response({"error": "LikeBook not found"}, status=status.HTTP_404_NOT_FOUND)
-        
 class UserSavedBooks(APIView):
-    @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER)
-    ])
     def get(self, request):
-
-        userNum = request.query_params.get('userNum')
-        
-        user = CustomUser.objects.get(userNum=userNum)
+        user = request.user
         like_books = LikeBook.objects.filter(userNum_like_book=user)
         
         saved_books = [like_book.isbn13_like_book for like_book in like_books]
@@ -203,12 +134,9 @@ class SearchBookByTitle(APIView):
         if title is None:
             return Response({"error": "title parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # 'icontains'를 사용하여 검색어를 포함하는 도서만 필터링합니다.
         books = Book.objects.filter(Q(title__icontains=title))
         if not books.exists():
             return Response({"message": title+"에 대한 결과가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        # 검색 결과를 직렬화합니다.
-        
         serializer = BookSerializer(books, many=True)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
