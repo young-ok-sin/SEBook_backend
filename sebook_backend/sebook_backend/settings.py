@@ -191,13 +191,6 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
-CSRF_USE_SESSIONS = True
-SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
-SESSION_COOKIE_SAMESITE = None
-
-SESSION_COOKIE_HTTPONL = False
-SESSION_COOKIE_SECURE = False
-
 
 # CORS 추가
 CORS_ALLOW_CREDENTIALS = True
