@@ -8,6 +8,7 @@ from rest_framework import status
 from django.contrib.auth import authenticate,login
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import logout
+from django.http import HttpResponse
 #from rest_framework_simplejwt.tokens import RefreshToken
 
 class GetUser(APIView):
@@ -52,8 +53,8 @@ class LoginView(APIView):
         openapi.Parameter('password', openapi.IN_QUERY, description="User pw", type=openapi.TYPE_STRING)
     ])
     def post(self, request, *args, **kwargs):
-        #username = request.query_params.get('username')
-        #password = request.query_params.get('password')
+        # username = request.query_params.get('username')
+        # password = request.query_params.get('password')
         username = request.data.get('username')
         password = request.data.get('password')
 
@@ -70,8 +71,6 @@ class LoginView(APIView):
         if user is not None:
             login(request, user)
             print(request.session)
-
-            print("rrrrrr",user.userNum)
             return Response({
                 "userNum": user.userNum,
                 "userName": user.name
@@ -80,6 +79,13 @@ class LoginView(APIView):
             return Response({"error": "Invalid credentials"}, status=401)
 
 class LogoutView(APIView):
-    def post(self, request, *args, **kwargs):
+    # 로그아웃
+    def get(self, request):
+        # 쿠키에 저장된 토큰 삭제 => 로그아웃 처리
+        response = HttpResponse()
+        request.session.clear() # 쿠키의 이름을 변경하였습니다.
         logout(request)
-        return Response({"message": "Logged out successfully"}, status=200)
+        response = Response({
+            "message": "Logout success"
+        }, status=status.HTTP_202_ACCEPTED)
+        return response

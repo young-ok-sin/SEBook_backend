@@ -112,27 +112,27 @@ class UserWriteBookReports(APIView):
 
 class ReadAllBookReport(APIView):
     def get(self, request):
-        reportNum = request.user
+        response_data = {}
+        
+        if request.user.is_authenticated:
+            reportNum = request.user
         
         # 사용자가 작성한 독후감들을 가져옴
-        user_reports = BookReport.objects.filter(userNum_report=reportNum)
-        user_reports_serializer = BookReportReadSerializer(user_reports, many=True)
+            user_reports = BookReport.objects.filter(userNum_report=reportNum)
         
         # 사용자가 공감한 독후감들을 가져옴
-        liked_reports = BookReport.objects.filter(likebookreport__userNum_like_bookreport=reportNum)
-        liked_reports_serializer = BookReportReadSerializer(liked_reports, many=True)
+            liked_reports = BookReport.objects.filter(likebookreport__userNum_like_bookreport=reportNum)
         
-        userLikeReports = liked_reports.values_list('reportNum', flat=True)
-        userWriteReports = user_reports.values_list('reportNum', flat=True)
+            userLikeReports = liked_reports.values_list('reportNum', flat=True)
+            userWriteReports = user_reports.values_list('reportNum', flat=True)
+
+            response_data["userLikeReports"] = list(userLikeReports)
+            response_data["userWriteReports"] = list(userWriteReports)
         
         all_reports = BookReport.objects.all()
         all_reports_serializer = BookReportReadSerializer(all_reports, many=True)
         
-        response_data = {
-            "userLikeReports": list(userLikeReports),
-            "userWriteReports": list(userWriteReports),
-            "allReports": all_reports_serializer.data
-        }
+        response_data["allReports"] =all_reports_serializer.data
         return Response(response_data)
 
 class LikeBookReportView(APIView):

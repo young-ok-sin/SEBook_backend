@@ -26,14 +26,11 @@ class RecommendView(APIView):
         self.recommender = BookRecommender()
 
     def get(self, request, *args, **kwargs): 
-        userNum = kwargs.get('userNum')
+        userNum = request.user
         if not userNum:
             recommendations = self.recommender.recommend_books()
             recommendations['message'] = "도서 추천을 받아보고 싶으시다면 로그인을 해주세요"
             return JsonResponse(recommendations, status=200)
-#     def get(self, request, *args, **kwargs): # params 사용 시
-#         userNum = request.GET.get('userNum')
-#         recommendations = self.recommender.recommend_books(userNum)
         try:
             recommendations = self.recommender.recommend_books(userNum)
         except Exception as e:
@@ -63,7 +60,6 @@ class LikeBookView(APIView):
         data = request.data
         try:
             user = request.user
-            print("req user",user)
             book = Book.objects.get(isbn13=data['isbn13'])
         except (CustomUser.DoesNotExist, Book.DoesNotExist):
             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)

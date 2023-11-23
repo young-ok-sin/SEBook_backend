@@ -42,27 +42,27 @@ class CreateParagraph(APIView):
 
 class CommunityListRead(APIView):
     def get(self, request):
-        userNum = request.user
+        response_data = {}
 
-        # 사용자가 작성한 커뮤니티 글들을 가져옴
-        user_community = Community.objects.filter(userNum_community=userNum)
-        user_community_serializer = CommunityReadSerializer(user_community, many=True)
+        if request.user.is_authenticated:
+            userNum = request.user
 
-        # 사용자가 좋아요한 커뮤니티 글들을 가져옴
-        liked_community = Community.objects.filter(likecommunity__userNum_like_community=userNum)
-        liked_community_serializer = CommunityReadSerializer(liked_community, many=True)
+            # 사용자가 작성한 커뮤니티 글들을 가져옴
+            user_community = Community.objects.filter(userNum_community=userNum)
 
-        userLikedPosts = liked_community.values_list('postNum', flat=True)
-        userWrittenPosts = user_community.values_list('postNum', flat=True)
+            # 사용자가 좋아요한 커뮤니티 글들을 가져옴
+            liked_community = Community.objects.filter(likecommunity__userNum_like_community=userNum)
+
+            userLikedPosts = liked_community.values_list('postNum', flat=True)
+            userWrittenPosts = user_community.values_list('postNum', flat=True)
+
+            response_data["userLikedPosts"] = list(userLikedPosts)
+            response_data["userWrittenPosts"] = list(userWrittenPosts)
 
         all_community = Community.objects.all()
         all_community_serializer = CommunityReadSerializer(all_community, many=True)
+        response_data["allPosts"] = all_community_serializer.data
 
-        response_data = {
-            "userLikedPosts": list(userLikedPosts),
-            "userWrittenPosts": list(userWrittenPosts),
-            "allPosts": all_community_serializer.data
-        }
         return Response(response_data)
 
 class LikeCommunityView(APIView):
