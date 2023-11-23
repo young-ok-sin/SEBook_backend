@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate,login
 from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import logout
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 #from rest_framework_simplejwt.tokens import RefreshToken
 
 class GetUser(APIView):
@@ -52,6 +53,7 @@ class LoginView(APIView):
         openapi.Parameter('username', openapi.IN_QUERY, description="User id", type=openapi.TYPE_STRING),
         openapi.Parameter('password', openapi.IN_QUERY, description="User pw", type=openapi.TYPE_STRING)
     ])
+    @csrf_exempt
     def post(self, request, *args, **kwargs):
         # username = request.query_params.get('username')
         # password = request.query_params.get('password')
@@ -78,12 +80,14 @@ class LoginView(APIView):
         else:
             return Response({"error": "Invalid credentials"}, status=401)
 
+
 class LogoutView(APIView):
     # 로그아웃
+    @csrf_exempt
     def get(self, request):
-        # 쿠키에 저장된 토큰 삭제 => 로그아웃 처리
+        
         response = HttpResponse()
-        request.session.clear() # 쿠키의 이름을 변경하였습니다.
+        request.session.clear()
         logout(request)
         response = Response({
             "message": "Logout success"

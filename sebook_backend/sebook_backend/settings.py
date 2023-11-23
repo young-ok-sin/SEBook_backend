@@ -40,10 +40,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['172.30.66.199',
-                '172.20.10.6',
+ALLOWED_HOSTS = [
                 '127.0.0.1',
-                'localhost:3000',]
+                'localhost']
 
 
 # Application definition
@@ -62,20 +61,18 @@ INSTALLED_APPS = [
     'bookReport',
     'user',
     'community',
-    'corsheaders',
+    'corsheaders'
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware', 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware', 
 ]
 
 REST_FRAMEWORK = {
@@ -83,6 +80,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 }
+
 ROOT_URLCONF = 'sebook_backend.urls'
 
 TEMPLATES = [
@@ -160,15 +158,13 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # 기본 인증 백엔드
-]
+
+
+
 
 
 #------------------------------내가 입력한거
 ##CORS
-CORS_ORIGIN_ALLOW_ALL=True
-CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOW_METHODS = (
     'DELETE',
@@ -194,16 +190,15 @@ CORS_ALLOW_HEADERS = (
 
 # CORS 추가
 CORS_ALLOW_CREDENTIALS = True
-CSRF_COOKIE_SECURE = False
 
 CORS_ORIGIN_WHITELIST = (
-    'http://172.30.66.199:8000','http://172.20.10.6:8000','http://127.0.0.1:3000', 'http://localhost:3000')
-
-
-AUTH_USER_MODEL = 'user.CustomUser'
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+)
 
 CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000'
 ]
 
-CSRF_USE_SESSIONS = True
+
+AUTH_USER_MODEL = 'user.CustomUser'

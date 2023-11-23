@@ -88,7 +88,6 @@ class LikeCommunityView(APIView):
             return Response({"message": "LikeBook created successfully"}, status=status.HTTP_201_CREATED)
     
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('userNum', openapi.IN_QUERY, description="User number", type=openapi.TYPE_INTEGER),
         openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
     ])
     def delete(self, request, *args, **kwargs):

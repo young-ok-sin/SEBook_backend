@@ -9,7 +9,18 @@ import random
 class BookRecommender:
     def __init__(self):
         self.data = list(Book.objects.select_related('categoryId_book').all())
-    
+    def recommend_randomBooks(self):
+            random_books = random.sample(self.data, 5)
+            random_books = [{
+                'title': book.title,
+                'author': book.author,
+                'cover': book.cover,
+                'description': book.description,
+                'categoryId': book.categoryId_book.categoryId,
+                'isbn13': book.isbn13
+            } for book in random_books]
+            return random_books
+        
     def recommend_books(self, userNum):
         like_books = LikeBook.objects.filter(userNum_like_book=userNum).order_by('-like_bookNum')
         recommended_books_isbn13 = []
@@ -26,7 +37,7 @@ class BookRecommender:
                 'categoryId': book.categoryId_book.categoryId,
                 'isbn13': book.isbn13
             } for book in random_books]
-            return random_books
+            return recommendations
         
         latest_book = user_books[0]
         same_category_books = Book.objects.filter(categoryId_book=latest_book.categoryId_book).exclude(isbn13__in=user_books_isbn13 + recommended_books_isbn13)[:5]
