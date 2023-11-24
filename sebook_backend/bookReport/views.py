@@ -197,3 +197,19 @@ class TopRatedBookReports(APIView):
         top_reports = BookReport.objects.annotate(like_count=Count('likebookreport')).order_by('-like_count', 'registDate_report')[:5]
         serializer = BookReportTop5ReadSerializer(top_reports, many=True)
         return Response(serializer.data, status=200)
+    
+class SearchBookReportByAuthor(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
+    ])
+    def get(self, request):
+        author = request.query_params.get('author', None)
+        if author is None:
+            return Response({"error": "Author parameter is required"}, status=400)
+
+        bookreports = BookReport.objects.filter(Q(isbn13_report__author__icontains=author))
+        if not bookreports.exists():  # 수정: BookReport.exists() -> bookreports.exists()
+            return Response({"message": f"No results found for author: {author}"}, status=404)
+
+        serializer = BookReportSerializer(bookreports, many=True)
+        return Response(serializer.data, status=200)
