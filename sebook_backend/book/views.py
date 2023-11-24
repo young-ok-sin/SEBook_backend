@@ -70,16 +70,24 @@ class RecommendView(APIView):
 
 #         return JsonResponse({'recommendations': recommendations}, safe=False)
 
-#사용자가 저장한 도서 목록 같이 보내기
 class BookListRead(APIView):
     def get(self, request):
-        book_list = Book.objects.all()#[:5] #swagger test 시 사용
+        user = request.user if request.user.is_authenticated else AnonymousUser()
+        book_list = Book.objects.all()
 
         if not book_list:
             return Response({"message": "No books found"}, status=404)
 
         serializer = BookSerializer(book_list, many=True)
-        return Response({"bookList": serializer.data})
+
+        # 사용자가 좋아한 도서의 목록을 가져옴
+        if isinstance(user, AnonymousUser):
+            liked_books_list = []
+        else:
+            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
+            liked_books_list = list(liked_books)
+
+        return Response({"bookList": serializer.data, "likedBooks": liked_books_list})
 
 class LikeBookView(APIView):
     @swagger_auto_schema(manual_parameters=[
