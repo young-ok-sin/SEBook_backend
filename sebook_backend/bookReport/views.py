@@ -211,5 +211,5 @@ class SearchBookReportByAuthor(APIView):
         if not bookreports.exists():  # 수정: BookReport.exists() -> bookreports.exists()
             return Response({"message": f"No results found for author: {author}"}, status=404)
 
-        serializer = BookReportSerializer(bookreports, many=True)
+        serializer = BookReportReadSerializer(bookreports, many=True)
         return Response(serializer.data, status=200)
