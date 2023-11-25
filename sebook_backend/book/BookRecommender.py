@@ -17,7 +17,8 @@ class BookRecommender:
                 'cover': book.cover,
                 'description': book.description,
                 'categoryId': book.categoryId_book.categoryId,
-                'isbn13': book.isbn13
+                'isbn13': book.isbn13,
+                'like_num':book.num_likes
             } for book in random_books]
             return random_books
         
@@ -35,7 +36,8 @@ class BookRecommender:
                 'cover': book.cover,
                 'description': book.description,
                 'categoryId': book.categoryId_book.categoryId,
-                'isbn13': book.isbn13
+                'isbn13': book.isbn13,
+                'like_num':book.num_likes
             } for book in random_books]
             return recommendations
         
@@ -68,7 +70,8 @@ class BookRecommender:
             'cover': book.cover,
             'description': book.description,
             'categoryId': book.categoryId_book.categoryId,
-            'isbn13': book.isbn13
+            'isbn13': book.isbn13,
+            'like_num':book.num_likes
         } for book in same_category_books]
 
         return recommendations[:15]

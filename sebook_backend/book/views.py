@@ -157,7 +157,16 @@ class SearchBookByAuthor(APIView):
             return Response({"message": author+"에 대한 결과가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = BookSerializer(books, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # 사용자가 좋아한 도서의 목록을 가져옴
+        user = request.user if request.user.is_authenticated else AnonymousUser()
+        liked_books_list = []
+        if not isinstance(user, AnonymousUser):
+            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
+            liked_books_list = list(liked_books)
+
+        return Response({"bookList": serializer.data, "likedBooks": liked_books_list}, status=status.HTTP_200_OK)
+
 
 class SearchBookByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
@@ -171,12 +180,29 @@ class SearchBookByTitle(APIView):
         books = Book.objects.filter(Q(title__icontains=title))
         if not books.exists():
             return Response({"message": title+"에 대한 결과가 없습니다."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = BookSerializer(books, many=True)
         
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = BookSerializer(books, many=True)
+
+        # 사용자가 좋아한 도서의 목록을 가져옴
+        user = request.user if request.user.is_authenticated else AnonymousUser()
+        liked_books_list = []
+        if not isinstance(user, AnonymousUser):
+            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
+            liked_books_list = list(liked_books)
+
+        return Response({"bookList": serializer.data, "likedBooks": liked_books_list}, status=status.HTTP_200_OK)
+
     
 class TopLikedBooks(APIView):
     def get(self, request):
         top_liked_books = Book.objects.order_by('-num_likes', 'isbn13')[:5]
         serializer = BookSerializer(top_liked_books, many=True)
-        return Response({"bestsellerList":serializer.data})
+
+        # 사용자가 로그인한 경우에만 사용자가 좋아한 도서 목록을 가져옴
+        user = request.user
+        liked_books_list = []
+        if user.is_authenticated:
+            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
+            liked_books_list = list(liked_books)
+
+        return Response({"bestsellerList": serializer.data, "likedBooks": liked_books_list})
