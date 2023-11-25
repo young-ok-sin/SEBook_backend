@@ -44,21 +44,6 @@ class CommunityListRead(APIView):
     def get(self, request):
         response_data = {}
 
-        if request.user.is_authenticated:
-            userNum = request.user
-
-            # 사용자가 작성한 커뮤니티 글들을 가져옴
-            user_community = Community.objects.filter(userNum_community=userNum)
-
-            # 사용자가 좋아요한 커뮤니티 글들을 가져옴
-            liked_community = Community.objects.filter(likecommunity__userNum_like_community=userNum)
-
-            userLikedPosts = liked_community.values_list('postNum', flat=True)
-            userWrittenPosts = user_community.values_list('postNum', flat=True)
-
-            response_data["userLikedPosts"] = list(userLikedPosts)
-            response_data["userWrittenPosts"] = list(userWrittenPosts)
-
         all_community = Community.objects.all()
         all_community_serializer = CommunityReadSerializer(all_community, many=True)
         response_data["allPosts"] = all_community_serializer.data
@@ -136,11 +121,10 @@ class SearchCommunityByAuthor(APIView):
         if author is None:
             return Response({"error": "Author parameter is required"}, status=400)
 
-        communities = Community.objects.filter(Q(isbn13_community__author__icontains=author))
-        if not communities.exists():
-            return Response({"message": f"No results found for author: {author}"}, status=404)
-
+        # Community 모델에서 작가(author)를 포함하는 커뮤니티 게시물을 검색
+        communities = Community.objects.filter(isbn13_community__author__icontains=author)
         serializer = CommunityReadSerializer(communities, many=True)
+
         return Response(serializer.data, status=200)
 
 class SearchCommunityByTitle(APIView):
@@ -152,9 +136,9 @@ class SearchCommunityByTitle(APIView):
         if title is None:
             return Response({"error": "title parameter is required"}, status=400)
 
-        communities = Community.objects.filter(Q(isbn13_community__title__icontains=title))
+        communities = Community.objects.filter(isbn13_community__title__icontains=title)
         if not communities.exists():
-            return Response({"message": f"No results found for author: {title}"}, status=404)
+            return Response({"message": f"No results found for title: {title}"}, status=404)
 
         serializer = CommunityReadSerializer(communities, many=True)
         return Response(serializer.data, status=200)

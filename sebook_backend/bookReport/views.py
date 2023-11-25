@@ -88,7 +88,7 @@ class DeleteBookReport(APIView):
             return Response({"error": "BookReport not found"}, status=status.HTTP_404_NOT_FOUND)
         book_report.delete()
         return Response({"message": "BookReport deleted"}, status=status.HTTP_204_NO_CONTENT)
-    
+
 class UserSavedBookReports(APIView):
     def get(self, request):
         try:
@@ -97,11 +97,7 @@ class UserSavedBookReports(APIView):
             saved_books = [like_bookreport.reportNum_like_bookreport for like_bookreport in like_bookreports]
             serializer = BookReportReadSerializer(saved_books, many=True)
 
-            # 사용자가 작성한 독후감 목록을 가져옴
-            user_reports = BookReport.objects.filter(userNum_report=user)
-            user_reports_serializer = BookReportReadSerializer(user_reports, many=True)
-
-            return Response({"likeBookReportList": serializer.data, "userBookReportList": user_reports_serializer.data})
+            return Response({"likeBookReportList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
@@ -112,44 +108,27 @@ class UserWriteBookReports(APIView):
             bookreports = BookReport.objects.filter(userNum_report=user)
             serializer = BookReportReadSerializer(bookreports, many=True)
 
-            # 사용자가 저장한 독후감 목록을 가져옴
-            user_saved_reports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
-            saved_reports = [like_bookreport.reportNum_like_bookreport for like_bookreport in user_saved_reports]
-            saved_reports_serializer = BookReportReadSerializer(saved_reports, many=True)
-
-            return Response({"userBookReportList": serializer.data, "savedBookReportList": saved_reports_serializer.data})
+            return Response({"userBookReportList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
 class ReadAllBookReport(APIView):
     def get(self, request):
         response_data = {}
-        
-        if request.user.is_authenticated:
-            reportNum = request.user
-        
-        # 사용자가 작성한 독후감들을 가져옴
-            user_reports = BookReport.objects.filter(userNum_report=reportNum)
-        
-        # 사용자가 공감한 독후감들을 가져옴
-            liked_reports = BookReport.objects.filter(likebookreport__userNum_like_bookreport=reportNum)
-        
-            userLikeReports = liked_reports.values_list('reportNum', flat=True)
-            userWriteReports = user_reports.values_list('reportNum', flat=True)
 
-            response_data["userLikeReports"] = list(userLikeReports)
-            response_data["userWriteReports"] = list(userWriteReports)
-        
         all_reports = BookReport.objects.all()
         all_reports_serializer = BookReportReadSerializer(all_reports, many=True)
-        
-        response_data["allReports"] =all_reports_serializer.data
+
+        response_data["allReports"] = all_reports_serializer.data
         return Response(response_data)
 
 class LikeBookReportView(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
+    ])
     def post(self, request, *args, **kwargs):
         #swagger 테스트 용
-        #data = request.query_params
+        # data = request.query_params
         
         #프론트 용 
         data = request.data
@@ -204,35 +183,15 @@ class SearchBookReportByTitle(APIView):
         bookreports = BookReport.objects.filter(isbn13_report__in=book_report_ids)
         serializer = BookReportReadSerializer(bookreports, many=True)
 
-        # 사용자가 작성한 독후감 목록을 가져옴
-        user = request.user
-        if user.is_authenticated:
-            user_reports = BookReport.objects.filter(userNum_report=user)
-            user_reports_serializer = BookReportReadSerializer(user_reports, many=True).data
-        else:
-            user_reports_serializer = []
-
-        # 사용자가 저장한 독후감 목록을 가져옴
-        if user.is_authenticated:
-            user_saved_reports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
-            saved_reports = [like_bookreport.reportNum_like_bookreport for like_bookreport in user_saved_reports]
-            saved_reports_serializer = BookReportReadSerializer(saved_reports, many=True).data
-        else:
-            saved_reports_serializer = []
-
-        return Response({
-            "bookReportList": serializer.data,
-            "userBookReportList": user_reports_serializer,
-            "savedBookReportList": saved_reports_serializer
-        }, status=200)
+        return Response({"bookReportList": serializer.data,}, status=200)
         
 class TopRatedBookReports(APIView):
     def get(self, request):
         top_reports = BookReport.objects.annotate(like_count=Count('likebookreport')).order_by('-like_count', 'registDate_report')[:5]
         serializer = BookReportTop5ReadSerializer(top_reports, many=True)
-        return Response(serializer.data, status=200)
-    
 
+        return Response({"topRatedBookReports": serializer.data}, status=200)
+        
 class SearchBookReportByAuthor(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
@@ -242,7 +201,7 @@ class SearchBookReportByAuthor(APIView):
         if author is None:
             return Response({"error": "Author parameter is required"}, status=400)
 
-        # Book 모델에서 title 검색
+        # Book 모델에서 author 검색
         books = Book.objects.filter(author__icontains=author)
         book_report_ids = books.values_list('isbn13', flat=True)
 
@@ -250,24 +209,4 @@ class SearchBookReportByAuthor(APIView):
         bookreports = BookReport.objects.filter(isbn13_report__in=book_report_ids)
         serializer = BookReportReadSerializer(bookreports, many=True)
 
-        # 사용자가 작성한 독후감 목록을 가져옴
-        user = request.user
-        if user.is_authenticated:
-            user_reports = BookReport.objects.filter(userNum_report=user)
-            user_reports_serializer = BookReportReadSerializer(user_reports, many=True).data
-        else:
-            user_reports_serializer = []
-
-        # 사용자가 저장한 독후감 목록을 가져옴
-        if user.is_authenticated:
-            user_saved_reports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
-            saved_reports = [like_bookreport.reportNum_like_bookreport for like_bookreport in user_saved_reports]
-            saved_reports_serializer = BookReportReadSerializer(saved_reports, many=True).data
-        else:
-            saved_reports_serializer = []
-
-        return Response({
-            "bookReportList": serializer.data,
-            "userBookReportList": user_reports_serializer,
-            "savedBookReportList": saved_reports_serializer
-        }, status=200)
+        return Response({"bookReportList": serializer.data}, status=200)

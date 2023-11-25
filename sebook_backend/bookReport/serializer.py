@@ -9,7 +9,7 @@ class BookReportReadSerializer(serializers.ModelSerializer):
     publisher = serializers.CharField(source='isbn13_report.publisher')
     username = serializers.CharField(source='userNum_report.name')
     like_count = serializers.SerializerMethodField()
-    # user_liked = serializers.SerializerMethodField()
+    user_liked = serializers.SerializerMethodField()
 
     def get_like_count(self, book_report):
         return LikeBookReport.objects.filter(reportNum_like_bookreport=book_report).count()
@@ -20,11 +20,9 @@ class BookReportReadSerializer(serializers.ModelSerializer):
         return list(user_ids)
     class Meta:
         model = BookReport
-        # fields = ['title', 'author', 'reportNum', 'reportContents', 'userNum_report', 'isbn13_report',
-        #         'registDate_report', 'reportTitle', 'publisher', 'like_count', 'user_liked','username']
         fields = ['title', 'author', 'reportNum', 'reportContents', 'userNum_report', 'isbn13_report',
-                'registDate_report', 'reportTitle', 'publisher', 'like_count','username']
-
+                'registDate_report', 'reportTitle', 'publisher', 'like_count', 'user_liked','username']
+        
 class BookReportTop5ReadSerializer(serializers.ModelSerializer):
     title = serializers.CharField(source='isbn13_report.title')
     author = serializers.CharField(source='isbn13_report.author')
@@ -32,7 +30,7 @@ class BookReportTop5ReadSerializer(serializers.ModelSerializer):
     username = serializers.CharField(source='userNum_report.name')
     cover = serializers.CharField(source='isbn13_report.cover')
     like_count = serializers.SerializerMethodField()
-    # user_liked = serializers.SerializerMethodField()
+    user_liked = serializers.SerializerMethodField()
 
     def get_like_count(self, book_report):
         return LikeBookReport.objects.filter(reportNum_like_bookreport=book_report).count()
@@ -43,10 +41,9 @@ class BookReportTop5ReadSerializer(serializers.ModelSerializer):
         return list(user_ids)
     class Meta:
         model = BookReport
-        # fields = ['title', 'author', 'reportNum', 'reportContents', 'userNum_report', 'isbn13_report',
-        #         'registDate_report', 'reportTitle', 'publisher', 'like_count', 'user_liked','username','cover']
         fields = ['title', 'author', 'reportNum', 'reportContents', 'userNum_report', 'isbn13_report',
-                'registDate_report', 'reportTitle', 'publisher', 'like_count','username','cover']
+                'registDate_report', 'reportTitle', 'publisher', 'like_count', 'user_liked','username','cover']
+
 
 
 class BookReportSerializer(serializers.ModelSerializer):
