@@ -5,7 +5,7 @@ from rest_framework.decorators import api_view
 from .models import Book, LikeBook
 from user.models import CustomUser
 
-from .serializer import BookSerializer
+from .serializer import BookSerializer,ReadBookAllSerializer
 from .BookRecommender import BookRecommender
 from django.http import HttpResponse
 from django.views import View
@@ -72,14 +72,21 @@ class RecommendView(APIView):
 
 class BookListRead(APIView):
     def get(self, request):
+        user = request.user if request.user.is_authenticated else AnonymousUser()
         book_list = Book.objects.all()#[:5]
-
         if not book_list:
             return Response({"message": "No books found"}, status=404)
 
-        serializer = BookSerializer(book_list, many=True)
+        serializer = ReadBookAllSerializer(book_list, many=True)
 
-        return Response({"bookList": serializer.data})
+        if isinstance(user, AnonymousUser):
+            liked_books_list = []
+        else:
+            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
+            liked_books_list = list(liked_books)
+
+        return Response({"bookList": serializer.data, "likedBooks": liked_books_list})
+
 
 class LikeBookView(APIView):
     @swagger_auto_schema(manual_parameters=[
