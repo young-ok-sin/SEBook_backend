@@ -72,22 +72,14 @@ class RecommendView(APIView):
 
 class BookListRead(APIView):
     def get(self, request):
-        user = request.user if request.user.is_authenticated else AnonymousUser()
-        book_list = Book.objects.all()
+        book_list = Book.objects.all()#[:5]
 
         if not book_list:
             return Response({"message": "No books found"}, status=404)
 
         serializer = BookSerializer(book_list, many=True)
 
-        # 사용자가 좋아한 도서의 목록을 가져옴
-        if isinstance(user, AnonymousUser):
-            liked_books_list = []
-        else:
-            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
-            liked_books_list = list(liked_books)
-
-        return Response({"bookList": serializer.data, "likedBooks": liked_books_list})
+        return Response({"bookList": serializer.data})
 
 class LikeBookView(APIView):
     @swagger_auto_schema(manual_parameters=[
@@ -158,14 +150,7 @@ class SearchBookByAuthor(APIView):
 
         serializer = BookSerializer(books, many=True)
 
-        # 사용자가 좋아한 도서의 목록을 가져옴
-        user = request.user if request.user.is_authenticated else AnonymousUser()
-        liked_books_list = []
-        if not isinstance(user, AnonymousUser):
-            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
-            liked_books_list = list(liked_books)
-
-        return Response({"bookList": serializer.data, "likedBooks": liked_books_list}, status=status.HTTP_200_OK)
+        return Response({"bookList": serializer.data}, status=status.HTTP_200_OK)
 
 
 class SearchBookByTitle(APIView):
@@ -183,26 +168,11 @@ class SearchBookByTitle(APIView):
         
         serializer = BookSerializer(books, many=True)
 
-        # 사용자가 좋아한 도서의 목록을 가져옴
-        user = request.user if request.user.is_authenticated else AnonymousUser()
-        liked_books_list = []
-        if not isinstance(user, AnonymousUser):
-            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
-            liked_books_list = list(liked_books)
-
-        return Response({"bookList": serializer.data, "likedBooks": liked_books_list}, status=status.HTTP_200_OK)
+        return Response({"bookList": serializer.data}, status=status.HTTP_200_OK)
 
     
 class TopLikedBooks(APIView):
     def get(self, request):
         top_liked_books = Book.objects.order_by('-num_likes', 'isbn13')[:5]
         serializer = BookSerializer(top_liked_books, many=True)
-
-        # 사용자가 로그인한 경우에만 사용자가 좋아한 도서 목록을 가져옴
-        user = request.user
-        liked_books_list = []
-        if user.is_authenticated:
-            liked_books = LikeBook.objects.filter(userNum_like_book=user).values_list('isbn13_like_book', flat=True)
-            liked_books_list = list(liked_books)
-
-        return Response({"bestsellerList": serializer.data, "likedBooks": liked_books_list})
+        return Response({"bestsellerList": serializer.data})
