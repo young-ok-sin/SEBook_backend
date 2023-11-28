@@ -127,45 +127,41 @@ class LikeBookReportView(APIView):
         openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
     ])
     def post(self, request, *args, **kwargs):
-        #swagger 테스트 용
-        # data = request.query_params
-        
-        #프론트 용 
-        data = request.data
+        data = request.query_params
+        #data = request.data
         try:
             user = request.user
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
         except (CustomUser.DoesNotExist, BookReport.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        like_bookReport_exists = LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).exists()
+        like_bookReport = LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).first()
 
-        if like_bookReport_exists:
-            return Response({"error": "LikeBookReport already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if like_bookReport:
+            like_bookReport.delete()
+            return Response({"message": "LikeBookReport removed successfully"}, status=status.HTTP_200_OK)
         else:
-            like_bookReport = LikeBookReport(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport)
-            like_bookReport.save()
+            LikeBookReport.objects.create(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport)
             return Response({"message": "LikeBookReport created successfully"}, status=status.HTTP_201_CREATED)
     
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
     ])
     def delete(self, request, *args, **kwargs):
-        data = request.query_params #swagger 테스트 용
+        data = request.query_params
         try:
             user = request.user
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
         except (CustomUser.DoesNotExist, BookReport.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        like_bookReport_exists = LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).exists()
+        like_bookReport = LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).first()
 
-        if like_bookReport_exists:
-            LikeBookReport.objects.filter(userNum_like_bookreport=user, reportNum_like_bookreport=bookReport).delete()
+        if like_bookReport:
+            like_bookReport.delete()
             return Response({"message": "LikeBookReport removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeBookReport not found"}, status=status.HTTP_404_NOT_FOUND)
-
 class SearchBookReportByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING)

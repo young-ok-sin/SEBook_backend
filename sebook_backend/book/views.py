@@ -87,13 +87,12 @@ class BookListRead(APIView):
 
         return Response({"bookList": serializer.data, "likedBooks": liked_books_list})
 
-
 class LikeBookView(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
     ])
     def post(self, request, *args, **kwargs):
-        #data = request.query_params # for swagger test
+        #data = request.query_params
         data = request.data
         try:
             user = request.user
@@ -101,17 +100,21 @@ class LikeBookView(APIView):
         except (CustomUser.DoesNotExist, Book.DoesNotExist):
             return Response({"error": "User or Book not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        created = LikeBook.objects.get_or_create(userNum_like_book=user, isbn13_like_book=book)
+        like_book = LikeBook.objects.filter(userNum_like_book=user, isbn13_like_book=book).first()
 
-        if not created:
-            return Response({"error": "LikeBook already exists"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        book.num_likes += 1  # num_likes 필드 업데이트
-        book.save()
-        return Response({"message": "LikeBook created successfully"}, status=status.HTTP_201_CREATED)
+        if like_book:
+            like_book.delete()
+            book.num_likes -= 1  # num_likes 필드 업데이트
+            book.save()
+            return Response({"message": "LikeBook removed successfully"}, status=status.HTTP_200_OK)
+        else:
+            LikeBook.objects.create(userNum_like_book=user, isbn13_like_book=book)
+            book.num_likes += 1  # num_likes 필드 업데이트
+            book.save()
+            return Response({"message": "LikeBook created successfully"}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(manual_parameters=[
-    openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
+        openapi.Parameter('isbn13', openapi.IN_QUERY, description="Book ISBN", type=openapi.TYPE_STRING)
     ])
     def delete(self, request, *args, **kwargs):
         data = request.query_params

@@ -55,7 +55,7 @@ class LikeCommunityView(APIView):
         openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
     ])
     def post(self, request, *args, **kwargs):
-        #data = request.query_params #swagger 테스트 용
+        #data = request.query_params
         data = request.data
         try:
             user = request.user
@@ -63,30 +63,30 @@ class LikeCommunityView(APIView):
         except (CustomUser.DoesNotExist, Community.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        like_community_exists = LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).exists()
+        like_community = LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).first()
 
-        if like_community_exists:
-            return Response({"error": "LikeCommunity already exists"}, status=status.HTTP_400_BAD_REQUEST)
+        if like_community:
+            like_community.delete()
+            return Response({"message": "LikeCommunity removed successfully"}, status=status.HTTP_200_OK)
         else:
-            like_community = LikeCommunity(userNum_like_community=user, postNum_like_community=community)
-            like_community.save()
-            return Response({"message": "LikeBook created successfully"}, status=status.HTTP_201_CREATED)
-    
+            LikeCommunity.objects.create(userNum_like_community=user, postNum_like_community=community)
+            return Response({"message": "LikeCommunity created successfully"}, status=status.HTTP_201_CREATED)
+
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
     ])
     def delete(self, request, *args, **kwargs):
-        data = request.query_params 
+        data = request.query_params
         try:
             user = request.user
             community = Community.objects.get(postNum=data['postNum'])
         except (CustomUser.DoesNotExist, Community.DoesNotExist):
             return Response({"error": "User or post not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        like_community_exists = LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).exists()
+        like_community = LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).first()
 
-        if like_community_exists:
-            LikeCommunity.objects.filter(userNum_like_community=user, postNum_like_community=community).delete()
+        if like_community:
+            like_community.delete()
             return Response({"message": "LikeCommunity removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeCommunity not found"}, status=status.HTTP_404_NOT_FOUND)
