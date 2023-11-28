@@ -127,8 +127,8 @@ class LikeBookReportView(APIView):
         openapi.Parameter('reportNum', openapi.IN_QUERY, description="reportNum", type=openapi.TYPE_INTEGER)
     ])
     def post(self, request, *args, **kwargs):
-        data = request.query_params
-        #data = request.data
+        #data = request.query_params
+        data = request.data
         try:
             user = request.user
             bookReport = BookReport.objects.get(reportNum=data['reportNum'])
