@@ -168,6 +168,7 @@ class LikeBookReportView(APIView):
             return Response({"message": "LikeBookReport removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeBookReport not found"}, status=status.HTTP_404_NOT_FOUND)
+
 class SearchBookReportByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING),
