@@ -115,7 +115,7 @@ class UserWriteBookReports(APIView):
 class ReadAllBookReport(APIView):
     def get(self, request):
         all_reports = BookReport.objects.all()
-        paginator = Paginator(all_reports, 5)
+        paginator = Paginator(all_reports, 4)
 
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
@@ -127,15 +127,6 @@ class ReadAllBookReport(APIView):
             'results': all_reports_serializer.data
         })
     
-# class ReadAllBookReport(APIView):
-#     def get(self, request):
-#         response_data = {}
-
-#         all_reports = BookReport.objects.all()
-#         all_reports_serializer = BookReportReadSerializer(all_reports, many=True)
-
-#         response_data["allReports"] = all_reports_serializer.data
-#         return Response(response_data)
 
 class LikeBookReportView(APIView):
     @swagger_auto_schema(manual_parameters=[
@@ -179,8 +170,10 @@ class LikeBookReportView(APIView):
             return Response({"error": "LikeBookReport not found"}, status=status.HTTP_404_NOT_FOUND)
 class SearchBookReportByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING)
+        openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING),
+        openapi.Parameter('page', openapi.IN_QUERY, description="currentPage", type=openapi.TYPE_INTEGER)
     ])
+
     def get(self, request):
         title = request.query_params.get('title', None)
         if title is None:
@@ -192,9 +185,38 @@ class SearchBookReportByTitle(APIView):
 
         # 검색된 도서와 연결된 독후감 조회
         bookreports = BookReport.objects.filter(isbn13_report__in=book_report_ids)
-        serializer = BookReportReadSerializer(bookreports, many=True)
 
-        return Response({"bookReportList": serializer.data,}, status=200)
+        # 페이징 처리
+        paginator = Paginator(bookreports, 4)
+        page_number = request.query_params.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        serializer = BookReportReadSerializer(page_obj, many=True)
+
+        return Response({
+            'total_pages': paginator.num_pages, 
+            'results': serializer.data
+        }, status=200)
+        
+# class SearchBookReportByTitle(APIView):
+#     @swagger_auto_schema(manual_parameters=[
+#         openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING)
+#     ])
+#     def get(self, request):
+#         title = request.query_params.get('title', None)
+#         if title is None:
+#             return Response({"error": "title parameter is required"}, status=400)
+
+#         # Book 모델에서 title 검색
+#         books = Book.objects.filter(title__icontains=title)
+#         book_report_ids = books.values_list('isbn13', flat=True)
+
+#         # 검색된 도서와 연결된 독후감 조회
+#         bookreports = BookReport.objects.filter(isbn13_report__in=book_report_ids)
+#         serializer = BookReportReadSerializer(bookreports, many=True)
+
+#         return Response({"bookReportList": serializer.data,}, status=200)
+
         
 class TopRatedBookReports(APIView):
     def get(self, request):
@@ -202,7 +224,7 @@ class TopRatedBookReports(APIView):
         serializer = BookReportTop5ReadSerializer(top_reports, many=True)
 
         return Response({"topRatedBookReports": serializer.data}, status=200)
-        
+
 class SearchBookReportByAuthor(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
@@ -218,6 +240,34 @@ class SearchBookReportByAuthor(APIView):
 
         # 검색된 도서와 연결된 독후감 조회
         bookreports = BookReport.objects.filter(isbn13_report__in=book_report_ids)
-        serializer = BookReportReadSerializer(bookreports, many=True)
 
-        return Response({"bookReportList": serializer.data}, status=200)
+        # 페이징 처리
+        paginator = Paginator(bookreports,4)
+        page_number = request.query_params.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        serializer = BookReportReadSerializer(page_obj, many=True)
+
+        return Response({
+            'total_pages': paginator.num_pages, 
+            'results': serializer.data
+        }, status=200)
+
+# class SearchBookReportByAuthor(APIView):
+#     @swagger_auto_schema(manual_parameters=[
+#         openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
+#     ])
+#     def get(self, request):
+#         author = request.query_params.get('author', None)
+#         if author is None:
+#             return Response({"error": "Author parameter is required"}, status=400)
+
+#         # Book 모델에서 author 검색
+#         books = Book.objects.filter(author__icontains=author)
+#         book_report_ids = books.values_list('isbn13', flat=True)
+
+#         # 검색된 도서와 연결된 독후감 조회
+#         bookreports = BookReport.objects.filter(isbn13_report__in=book_report_ids)
+#         serializer = BookReportReadSerializer(bookreports, many=True)
+
+#         return Response({"bookReportList": serializer.data}, status=200)
