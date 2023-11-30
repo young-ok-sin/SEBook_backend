@@ -4,7 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import BookReport, Book, LikeBookReport
 from user.models import CustomUser
-
+from django.core.paginator import Paginator
 from .serializer import BookReportReadSerializer,BookReportSerializer,BookReportTop5ReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -111,16 +111,31 @@ class UserWriteBookReports(APIView):
             return Response({"userBookReportList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
-
+        
 class ReadAllBookReport(APIView):
     def get(self, request):
-        response_data = {}
-
         all_reports = BookReport.objects.all()
-        all_reports_serializer = BookReportReadSerializer(all_reports, many=True)
+        paginator = Paginator(all_reports, 5)
 
-        response_data["allReports"] = all_reports_serializer.data
-        return Response(response_data)
+        page_number = request.query_params.get('page')
+        page_obj = paginator.get_page(page_number)
+
+        all_reports_serializer = BookReportReadSerializer(page_obj, many=True)
+
+        return Response({
+            'total_pages': paginator.num_pages, 
+            'results': all_reports_serializer.data
+        })
+    
+# class ReadAllBookReport(APIView):
+#     def get(self, request):
+#         response_data = {}
+
+#         all_reports = BookReport.objects.all()
+#         all_reports_serializer = BookReportReadSerializer(all_reports, many=True)
+
+#         response_data["allReports"] = all_reports_serializer.data
+#         return Response(response_data)
 
 class LikeBookReportView(APIView):
     @swagger_auto_schema(manual_parameters=[

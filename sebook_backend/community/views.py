@@ -4,7 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Community, Book, LikeCommunity
 from user.models import CustomUser
-
+from django.core.paginator import Paginator
 from .serializer import ComunitySerialzer,CommunityReadSerializer
 from rest_framework.response import Response
 from django.http import JsonResponse
@@ -42,13 +42,20 @@ class CreateParagraph(APIView):
 
 class CommunityListRead(APIView):
     def get(self, request):
-        response_data = {}
 
         all_community = Community.objects.all()
-        all_community_serializer = CommunityReadSerializer(all_community, many=True)
-        response_data["allPosts"] = all_community_serializer.data
+        paginator = Paginator(all_community, 5)
 
-        return Response(response_data)
+        page_number = request.query_params.get('page')
+        page_obj = paginator.get_page(page_number)
+        
+        all_community_serializer = CommunityReadSerializer(page_obj, many=True)
+
+        return Response({
+            'total_pages': paginator.num_pages, 
+            'results': all_community_serializer.data
+        })
+
 
 class LikeCommunityView(APIView):
     @swagger_auto_schema(manual_parameters=[
