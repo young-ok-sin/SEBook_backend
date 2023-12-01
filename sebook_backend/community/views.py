@@ -44,7 +44,7 @@ class CommunityListRead(APIView):
     def get(self, request):
 
         all_community = Community.objects.all()
-        paginator = Paginator(all_community, 4)
+        paginator = Paginator(all_community, 5)
 
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
