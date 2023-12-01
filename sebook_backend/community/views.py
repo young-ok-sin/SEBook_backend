@@ -119,20 +119,6 @@ class UserWriteCommunity(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
-# class SearchCommunityByAuthor(APIView):
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
-#     ])
-#     def get(self, request):
-#         author = request.query_params.get('author', None)
-#         if author is None:
-#             return Response({"error": "Author parameter is required"}, status=400)
-
-#         # Community 모델에서 작가(author)를 포함하는 커뮤니티 게시물을 검색
-#         communities = Community.objects.filter(isbn13_community__author__icontains=author)
-#         serializer = CommunityReadSerializer(communities, many=True)
-
-#         return Response(serializer.data, status=200)
 class SearchCommunityByAuthor(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
@@ -146,7 +132,7 @@ class SearchCommunityByAuthor(APIView):
         communities = Community.objects.filter(isbn13_community__author__icontains=author)
 
         # 페이징 처리
-        paginator = Paginator(communities, 4)
+        paginator = Paginator(communities, 5)
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -156,22 +142,6 @@ class SearchCommunityByAuthor(APIView):
             'total_pages': paginator.num_pages, 
             'results': serializer.data
         }, status=200)
-        
-# class SearchCommunityByTitle(APIView):
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('title', openapi.IN_QUERY, description="search by title", type=openapi.TYPE_STRING)
-#     ])
-#     def get(self, request):
-#         title = request.query_params.get('title', None)
-#         if title is None:
-#             return Response({"error": "title parameter is required"}, status=400)
-
-#         communities = Community.objects.filter(isbn13_community__title__icontains=title)
-#         if not communities.exists():
-#             return Response({"message": f"No results found for title: {title}"}, status=404)
-
-#         serializer = CommunityReadSerializer(communities, many=True)
-#         return Response(serializer.data, status=200)
 
 class SearchCommunityByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
@@ -187,7 +157,7 @@ class SearchCommunityByTitle(APIView):
             return Response({"message": f"No results found for title: {title}"}, status=404)
 
         # 페이징 처리
-        paginator = Paginator(communities, 4)
+        paginator = Paginator(communities, 5)
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
 
