@@ -18,8 +18,8 @@ from drf_yasg import openapi
 from django.db import connection
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import F
 from django.contrib.auth.models import AnonymousUser
+from django.db.models import Count
 
 class RecommendView(APIView):
     def __init__(self, **kwargs):
@@ -180,9 +180,9 @@ class SearchBookByTitle(APIView):
 
         return Response({"bookList": serializer.data}, status=status.HTTP_200_OK)
 
-    
+
 class TopLikedBooks(APIView):
     def get(self, request):
-        top_liked_books = Book.objects.order_by('-num_likes', 'isbn13')[:5]
+        top_liked_books = Book.objects.annotate(total_likes=Count('likebook')).order_by('-total_likes', 'isbn13')[:5]
         serializer = BookSerializer(top_liked_books, many=True)
         return Response({"bestsellerList": serializer.data})
