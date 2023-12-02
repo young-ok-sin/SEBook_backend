@@ -90,6 +90,9 @@ class DeleteBookReport(APIView):
         return Response({"message": "BookReport deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 class UserSavedBookReports(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
         try:
             user = request.user
@@ -123,6 +126,9 @@ class UserSavedBookReports(APIView):
 #             return Response({"error": "User not found"}, status=404)
 
 class UserWriteBookReports(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
         try:
             user = request.user
@@ -145,6 +151,9 @@ class UserWriteBookReports(APIView):
             return Response({"error": "User not found"}, status=404)
         
 class ReadAllBookReport(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
         all_reports = BookReport.objects.all()
         paginator = Paginator(all_reports, 4)
@@ -200,6 +209,7 @@ class LikeBookReportView(APIView):
             return Response({"message": "LikeBookReport removed successfully"}, status=status.HTTP_200_OK)
         else:
             return Response({"error": "LikeBookReport not found"}, status=status.HTTP_404_NOT_FOUND)
+        
 class SearchBookReportByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('title', openapi.IN_QUERY, description="Search by title", type=openapi.TYPE_STRING),
@@ -259,7 +269,8 @@ class TopRatedBookReports(APIView):
 
 class SearchBookReportByAuthor(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
+        openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING),
+        openapi.Parameter('page', openapi.IN_QUERY, description="currentPage", type=openapi.TYPE_INTEGER)
     ])
     def get(self, request):
         author = request.query_params.get('author', None)

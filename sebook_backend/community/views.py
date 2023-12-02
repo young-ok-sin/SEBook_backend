@@ -41,6 +41,9 @@ class CreateParagraph(APIView):
         return JsonResponse(serializer.data)
 
 class CommunityListRead(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
 
         all_community = Community.objects.all()
@@ -98,6 +101,9 @@ class LikeCommunityView(APIView):
             return Response({"error": "LikeCommunity not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class UserSavedCommunity(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
         try:
             user = request.user
@@ -107,6 +113,7 @@ class UserSavedCommunity(APIView):
             paginator = Paginator(saved_posts, 4)
 
             page_number = request.query_params.get('page')
+            
             page_obj = paginator.get_page(page_number)
             
             all_community_serializer = CommunityReadSerializer(page_obj, many=True)
@@ -121,6 +128,9 @@ class UserSavedCommunity(APIView):
             return Response({"error": "User not found"}, status=404)
 
 class UserWriteCommunity(APIView):
+    @swagger_auto_schema(manual_parameters=[
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
+    ])
     def get(self, request):
         try:
             user = request.user
@@ -144,7 +154,8 @@ class UserWriteCommunity(APIView):
 
 class SearchCommunityByAuthor(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING)
+        openapi.Parameter('author', openapi.IN_QUERY, description="Search by author", type=openapi.TYPE_STRING),
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
     ])
     def get(self, request):
         author = request.query_params.get('author', None)
@@ -168,7 +179,8 @@ class SearchCommunityByAuthor(APIView):
 
 class SearchCommunityByTitle(APIView):
     @swagger_auto_schema(manual_parameters=[
-        openapi.Parameter('title', openapi.IN_QUERY, description="search by title", type=openapi.TYPE_STRING)
+        openapi.Parameter('title', openapi.IN_QUERY, description="search by title", type=openapi.TYPE_STRING),
+        openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
     ])
     def get(self, request):
         title = request.query_params.get('title', None)
