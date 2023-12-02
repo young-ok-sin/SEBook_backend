@@ -44,7 +44,7 @@ class CommunityListRead(APIView):
     def get(self, request):
 
         all_community = Community.objects.all()
-        paginator = Paginator(all_community, 5)
+        paginator = Paginator(all_community, 4)
 
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
@@ -132,7 +132,7 @@ class SearchCommunityByAuthor(APIView):
         communities = Community.objects.filter(isbn13_community__author__icontains=author)
 
         # 페이징 처리
-        paginator = Paginator(communities, 5)
+        paginator = Paginator(communities, 4)
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
 
@@ -157,7 +157,7 @@ class SearchCommunityByTitle(APIView):
             return Response({"message": f"No results found for title: {title}"}, status=404)
 
         # 페이징 처리
-        paginator = Paginator(communities, 5)
+        paginator = Paginator(communities, 4)
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
 
