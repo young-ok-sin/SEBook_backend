@@ -134,7 +134,7 @@ class UserWriteBookReports(APIView):
             user = request.user
             bookreports = BookReport.objects.filter(userNum_report=user)
             
-            paginator = Paginator(bookreports, 4)
+            paginator = Paginator(bookreports, 6)
 
             page_number = request.query_params.get('page')
             page_obj = paginator.get_page(page_number)
