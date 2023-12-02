@@ -56,7 +56,6 @@ class CommunityListRead(APIView):
             'results': all_community_serializer.data
         })
 
-
 class LikeCommunityView(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('postNum', openapi.IN_QUERY, description="postNum", type=openapi.TYPE_INTEGER)
