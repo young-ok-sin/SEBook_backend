@@ -104,8 +104,20 @@ class UserSavedCommunity(APIView):
             user = request.user
             saved_communities = LikeCommunity.objects.filter(userNum_like_community=user)
             saved_posts = [like_community.postNum_like_community for like_community in saved_communities]
-            serializer = CommunityReadSerializer(saved_posts, many=True)
-            return Response({"savedCommunityList": serializer.data})
+            
+            paginator = Paginator(saved_posts, 4)
+
+            page_number = request.query_params.get('page')
+            page_obj = paginator.get_page(page_number)
+            
+            all_community_serializer = CommunityReadSerializer(page_obj, many=True)
+
+            return Response({
+                'total_pages': paginator.num_pages, 
+                'results': all_community_serializer.data
+            })
+            # serializer = CommunityReadSerializer(saved_posts, many=True)
+            # return Response({"savedCommunityList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
@@ -114,8 +126,20 @@ class UserWriteCommunity(APIView):
         try:
             user = request.user
             user_community = Community.objects.filter(userNum_community=user)
-            serializer = CommunityReadSerializer(user_community, many=True)
-            return Response({"userCommunityList": serializer.data})
+            
+            paginator = Paginator(user_community, 4)
+
+            page_number = request.query_params.get('page')
+            page_obj = paginator.get_page(page_number)
+            
+            all_community_serializer = CommunityReadSerializer(page_obj, many=True)
+
+            return Response({
+                'total_pages': paginator.num_pages, 
+                'results': all_community_serializer.data
+            })
+            # serializer = CommunityReadSerializer(user_community, many=True)
+            # return Response({"userCommunityList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
