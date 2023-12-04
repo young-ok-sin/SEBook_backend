@@ -46,7 +46,7 @@ class CommunityListRead(APIView):
     ])
     def get(self, request):
 
-        all_community = Community.objects.all()
+        all_community = Community.objects.all().order_by('-registDate_community')
         paginator = Paginator(all_community, 4)
 
         page_number = request.query_params.get('page')
@@ -134,7 +134,7 @@ class UserWriteCommunity(APIView):
     def get(self, request):
         try:
             user = request.user
-            user_community = Community.objects.filter(userNum_community=user)
+            user_community = Community.objects.filter(userNum_community=user).order_by('-registDate_community')
             
             paginator = Paginator(user_community, 4)
 
@@ -147,8 +147,6 @@ class UserWriteCommunity(APIView):
                 'total_pages': paginator.num_pages, 
                 'results': all_community_serializer.data
             })
-            # serializer = CommunityReadSerializer(user_community, many=True)
-            # return Response({"userCommunityList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
@@ -163,7 +161,7 @@ class SearchCommunityByAuthor(APIView):
             return Response({"error": "Author parameter is required"}, status=400)
 
         # Community 모델에서 작가(author)를 포함하는 커뮤니티 게시물을 검색
-        communities = Community.objects.filter(isbn13_community__author__icontains=author)
+        communities = Community.objects.filter(isbn13_community__author__icontains=author).order_by('-registDate_community')
 
         # 페이징 처리
         paginator = Paginator(communities, 4)
@@ -187,7 +185,7 @@ class SearchCommunityByTitle(APIView):
         if title is None:
             return Response({"error": "title parameter is required"}, status=400)
 
-        communities = Community.objects.filter(isbn13_community__title__icontains=title)
+        communities = Community.objects.filter(isbn13_community__title__icontains=title).order_by('-registDate_community')
         if not communities.exists():
             return Response({"message": f"No results found for title: {title}"}, status=404)
 
