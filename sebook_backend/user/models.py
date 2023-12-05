@@ -20,7 +20,6 @@ class UserManager(BaseUserManager):
 class CustomUser(AbstractBaseUser):
     userNum = models.AutoField(primary_key=True, null=False)
     userId = models.CharField(max_length=45, unique=True)
-    #password = models.CharField(max_length=128, null=False)
     name = models.CharField(max_length=20, null=False)
     last_login = models.DateTimeField(default=timezone.now)
 

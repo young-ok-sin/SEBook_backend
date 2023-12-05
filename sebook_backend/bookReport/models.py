@@ -2,7 +2,6 @@ from django.db import models
 from user.models import CustomUser
 from book.models import Book
 from django.utils import timezone
-# Create your models here.
 
 class BookReport(models.Model):
     reportNum = models.AutoField(primary_key=True, null=False)

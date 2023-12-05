@@ -10,7 +10,7 @@ from django.contrib.sessions.backends.db import SessionStore
 from django.contrib.auth import logout
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-#from rest_framework_simplejwt.tokens import RefreshToken
+
 
 class GetUser(APIView):
     def get(self, request):
@@ -82,7 +82,6 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    # 로그아웃
     @csrf_exempt
     def get(self, request):
         

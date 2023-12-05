@@ -157,8 +157,3 @@ class TopLikedBooks(APIView):
         serializer = BookSerializer(top_liked_books, many=True)
         return Response({"bestsellerList": serializer.data})
 
-# class TopLikedBooks(APIView):
-#     def get(self, request):
-#         top_liked_books = Book.objects.annotate(total_likes=Count('likebook')).order_by('-total_likes', 'isbn13')[:5]
-#         serializer = BookSerializer(top_liked_books, many=True)
-#         return Response({"bestsellerList": serializer.data})

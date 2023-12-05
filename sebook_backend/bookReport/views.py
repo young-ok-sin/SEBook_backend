@@ -113,17 +113,6 @@ class UserSavedBookReports(APIView):
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
-# class UserSavedBookReports(APIView):
-#     def get(self, request):
-#         try:
-#             user = request.user
-#             like_bookreports = LikeBookReport.objects.filter(userNum_like_bookreport=user)
-#             saved_books = [like_bookreport.reportNum_like_bookreport for like_bookreport in like_bookreports]
-#             serializer = BookReportReadSerializer(saved_books, many=True)
-
-#             return Response({"likeBookReportList": serializer.data})
-#         except CustomUser.DoesNotExist:
-#             return Response({"error": "User not found"}, status=404)
 class UserWriteBookReports(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
@@ -146,28 +135,7 @@ class UserWriteBookReports(APIView):
             })
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
-# class UserWriteBookReports(APIView):
-#     @swagger_auto_schema(manual_parameters=[
-#         openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)
-#     ])
-#     def get(self, request):
-#         try:
-#             user = request.user
-#             bookreports = BookReport.objects.filter(userNum_report=user)
-            
-#             paginator = Paginator(bookreports, 6)
 
-#             page_number = request.query_params.get('page')
-#             page_obj = paginator.get_page(page_number)
-
-#             all_reports_serializer = BookReportReadSerializer(page_obj, many=True)
-            
-#             return Response({
-#                 'total_pages': paginator.num_pages, 
-#                 'results': all_reports_serializer.data
-#             })
-#         except CustomUser.DoesNotExist:
-#             return Response({"error": "User not found"}, status=404)
 class ReadAllBookReport(APIView):
     @swagger_auto_schema(manual_parameters=[
         openapi.Parameter('page', openapi.IN_QUERY, description="page", type=openapi.TYPE_INTEGER)

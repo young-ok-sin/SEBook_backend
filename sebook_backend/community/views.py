@@ -47,7 +47,7 @@ class CommunityListRead(APIView):
     def get(self, request):
 
         all_community = Community.objects.all().order_by('-registDate_community')
-        paginator = Paginator(all_community, 4)
+        paginator = Paginator(all_community, 5)
 
         page_number = request.query_params.get('page')
         page_obj = paginator.get_page(page_number)
@@ -122,8 +122,6 @@ class UserSavedCommunity(APIView):
                 'total_pages': paginator.num_pages, 
                 'results': all_community_serializer.data
             })
-            # serializer = CommunityReadSerializer(saved_posts, many=True)
-            # return Response({"savedCommunityList": serializer.data})
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 

@@ -3,7 +3,6 @@ from user.models import CustomUser
 
 from book.models import Book
 
-# Create your models here.
 
 class Community(models.Model):
     postNum = models.AutoField(primary_key=True)
