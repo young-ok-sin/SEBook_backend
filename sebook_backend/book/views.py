@@ -20,44 +20,45 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Count
 
-class RecommendView(APIView):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.recommender = BookRecommender()
+# class RecommendView(APIView):
+#     def __init__(self, **kwargs):
+#         super().__init__(**kwargs)
+#         self.recommender = BookRecommender()
 
-    def get(self, request, *args, **kwargs): 
-        userNum = request.user
-        if isinstance(userNum, AnonymousUser):  # 로그인하지 않은 경우
-            recommendations = self.recommender.recommend_randomBooks()  # userNum 인자 생략
-            recommendations = {'recommendations': recommendations, 'message': "도서 추천을 받아보고 싶으시다면 로그인을 해주세요"}
-            return JsonResponse(recommendations, status=200)
+#     def get(self, request, *args, **kwargs): 
+#         userNum = request.user
+#         if isinstance(userNum, AnonymousUser):  # 로그인하지 않은 경우
+#             recommendations = self.recommender.recommend_randomBooks()  # userNum 인자 생략
+#             recommendations = {'recommendations': recommendations, 'message': "도서 추천을 받아보고 싶으시다면 로그인을 해주세요"}
+#             return JsonResponse(recommendations, status=200)
 
-        like_books = LikeBook.objects.filter(userNum_like_book=userNum)
-        if not like_books:
-            recommendations = self.recommender.recommend_randomBooks()  # userNum 인자 생략
-            recommendations = {'recommendations': recommendations, 'message': "저장한 도서가 없습니다. 랜덤 도서를 추천합니다."}
-            return JsonResponse(recommendations, status=200)
+#         like_books = LikeBook.objects.filter(userNum_like_book=userNum)
+#         if not like_books:
+#             recommendations = self.recommender.recommend_randomBooks()  # userNum 인자 생략
+#             recommendations = {'recommendations': recommendations, 'message': "저장한 도서가 없습니다. 랜덤 도서를 추천합니다."}
+#             return JsonResponse(recommendations, status=200)
 
-        try:
-            recommendations = self.recommender.recommend_books(userNum)  # userNum 인자 전달
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+#         try:
+#             recommendations = self.recommender.recommend_books(userNum)  # userNum 인자 전달
+#         except Exception as e:
+#             return JsonResponse({"error": str(e)}, status=500)
 
-        if not recommendations:
-            return JsonResponse({"message": "이 사용자에 대한 추천이 없습니다."}, status=404)
+#         if not recommendations:
+#             return JsonResponse({"message": "이 사용자에 대한 추천이 없습니다."}, status=404)
 
-        # 최근에 저장한 도서와 같은 카테고리인 도서들을 먼저 새로운 리스트에 담기
-        latest_book_category = like_books.latest('like_bookNum').isbn13_like_book.categoryId_book_id
-        category_books = [book for book in recommendations if book['categoryId'] == latest_book_category]
+#         # 최근에 저장한 도서와 같은 카테고리인 도서들을 먼저 새로운 리스트에 담기
+#         latest_book_category = like_books.latest('like_bookNum').isbn13_like_book.categoryId_book_id
+#         category_books = [book for book in recommendations if book['categoryId'] == latest_book_category]
 
-        # 나머지 도서들을 리스트에 담기
-        remaining_books = [book for book in recommendations if book['categoryId'] != latest_book_category]
+#         # 나머지 도서들을 리스트에 담기
+#         remaining_books = [book for book in recommendations if book['categoryId'] != latest_book_category]
 
-        # 최근에 저장한 도서와 같은 카테고리인 도서들을 먼저 추가한 후, 나머지 도서들을 추가
-        final_recommendations = category_books + remaining_books
+#         # 최근에 저장한 도서와 같은 카테고리인 도서들을 먼저 추가한 후, 나머지 도서들을 추가
+#         final_recommendations = category_books + remaining_books
+#         print("final",final_recommendations)
 
-        # final_recommendations = final_recommendations[::-1]
-        return JsonResponse({'recommendations': final_recommendations}, safe=False)
+#         # final_recommendations = final_recommendations[::-1]
+#         return JsonResponse({'recommendations': final_recommendations}, safe=False)
 
 # class RecommendView(APIView):
 #     def __init__(self, **kwargs):
@@ -87,7 +88,26 @@ class RecommendView(APIView):
         
 #         recommendations = recommendations[::-1]
 #         return JsonResponse({'recommendations': recommendations}, safe=False)
+class RecommendView(APIView):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.recommender = BookRecommender()
 
+    def get(self, request, *args, **kwargs):
+        userNum = request.user
+        if isinstance(userNum, AnonymousUser):  # 로그인하지 않은 경우
+            recommendations = self.recommender.recommend_books()  # userNum 인자 생략
+            recommendations['message'] = "도서 추천을 받아보고 싶으시다면 로그인을 해주세요"
+            return JsonResponse(recommendations, status=200)
+
+        try:
+            recommendations = self.recommender.recommend_books(userNum)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+        if not recommendations:
+            return JsonResponse({"message": "이 사용자에 대한 추천이 없습니다."}, status=404)
+        return JsonResponse({'recommendations': recommendations}, safe=False)
 # class RecommendView(APIView):
 #     def __init__(self, **kwargs):
 #         super().__init__(**kwargs)
@@ -106,7 +126,7 @@ class RecommendView(APIView):
 
 #         if not recommendations:
 #             return JsonResponse({"message": "No recommendations found for this user"}, status=404)
-
+#         print("추천 도서",recommendations)
 #         return JsonResponse({'recommendations': recommendations}, safe=False)
 
 class BookListRead(APIView):
