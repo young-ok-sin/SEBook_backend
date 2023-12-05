@@ -26,7 +26,11 @@ class BookRecommender:
             'num_likes': book.num_likes
         } for book in random_books]
         return random_books
-
+    
+    def recommend_books(self, userNum=None):
+        if userNum is None:
+            return self.recommend_randomBooks()
+    
     def recommend_books(self, userNum):
         like_books = LikeBook.objects.filter(userNum_like_book=userNum).order_by('-like_bookNum')
         user_books = [like_book.isbn13_like_book for like_book in like_books]
