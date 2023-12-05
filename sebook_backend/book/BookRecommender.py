@@ -62,9 +62,31 @@ class BookRecommender:
         for edge in edges:
             if edge[1] not in recommended_books_isbn13:
                 recommended_books_isbn13.append(edge[1])
-            if len(recommended_books_isbn13) >= 5:
+            if len(user_books) > 1 and len(recommended_books_isbn13) >= 5:
                 break
-        
+            if len(user_books) == 1:
+                if len(recommended_books_isbn13) >= 15:
+                    break
+        #사용자가 저장한 도서가 1개일 때
+        if len(recommended_books_isbn13) >= 15:
+            recommended_books = []
+            for isbn13 in recommended_books_isbn13:
+                book = Book.objects.get(isbn13=isbn13)  # get 메서드를 사용하여 각 ISBN13에 해당하는 도서를 검색
+                recommended_books.append(book)
+
+            recommendations = [{
+                'title': book.title,
+                'author': book.author,
+                'cover': book.cover,
+                'description': book.description,
+                'categoryId': book.categoryId_book.categoryId,
+                'isbn13': book.isbn13,
+                'num_likes': book.num_likes
+            } for book in recommended_books]
+
+            if not recommendations:
+                return self.recommend_randomBooks()
+            return recommendations[:15]
         # 그래프 그리기
         # plt.figure(figsize=(10, 10))
         # pos = nx.spring_layout(self.G)
@@ -74,13 +96,13 @@ class BookRecommender:
 
         # 그래프 출력
         # plt.show()
-        
+        final_list = []
         if len(user_books) > 1:
             user_categories = [book.categoryId_book for book in user_books[1:]]
             category_counts = Counter(user_categories)
             total = sum(category_counts.values())
             category_ratios = {category: count / total for category, count in category_counts.items()}
-            final_list = []
+            
             for category, ratio in sorted(category_ratios.items(), key=lambda item: item[1], reverse=True):
                 num_books = int(ratio * (15 - len(recommended_books_isbn13)))
                 category_books = Book.objects.filter(categoryId_book=category).exclude(isbn13__in=user_books_isbn13 + recommended_books_isbn13)[:num_books]
