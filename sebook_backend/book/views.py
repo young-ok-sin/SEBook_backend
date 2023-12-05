@@ -4,7 +4,6 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Book, LikeBook
 from user.models import CustomUser
-
 from .serializer import BookSerializer,ReadBookAllSerializer
 from .BookRecommender import BookRecommender
 from django.http import HttpResponse
@@ -220,9 +219,14 @@ class SearchBookByTitle(APIView):
 
         return Response({"bookList": serializer.data}, status=status.HTTP_200_OK)
 
-
 class TopLikedBooks(APIView):
     def get(self, request):
-        top_liked_books = Book.objects.annotate(total_likes=Count('likebook')).order_by('-total_likes', 'isbn13')[:5]
+        top_liked_books = Book.objects.order_by('-num_likes', 'isbn13')[:5]
         serializer = BookSerializer(top_liked_books, many=True)
         return Response({"bestsellerList": serializer.data})
+
+# class TopLikedBooks(APIView):
+#     def get(self, request):
+#         top_liked_books = Book.objects.annotate(total_likes=Count('likebook')).order_by('-total_likes', 'isbn13')[:5]
+#         serializer = BookSerializer(top_liked_books, many=True)
+#         return Response({"bestsellerList": serializer.data})

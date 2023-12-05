@@ -5,7 +5,7 @@ from book.models import Book,LikeBook
 from sklearn.feature_extraction.text import TfidfVectorizer
 from collections import Counter
 import random
-
+from operator import itemgetter
 
 # class BookRecommender:
 #     def __init__(self):
@@ -82,9 +82,10 @@ import random
 class BookRecommender:
     def __init__(self):
         self.data = list(Book.objects.select_related('categoryId_book').all())
-    
+        self.G = None
+
     def recommend_randomBooks(self):
-        random_books = random.sample(self.data, 5)
+        random_books = random.choices(self.data, k=5)
         random_books = [{
             'title': book.title,
             'author': book.author,
@@ -94,51 +95,41 @@ class BookRecommender:
             'isbn13': book.isbn13
         } for book in random_books]
         return random_books
-    
+
     def recommend_books(self, userNum):
         like_books = LikeBook.objects.filter(userNum_like_book=userNum).order_by('-like_bookNum')
-        recommended_books_isbn13 = []
         user_books = [like_book.isbn13_like_book for like_book in like_books]
         user_books_isbn13 = [book.isbn13 for book in user_books]
 
         if not user_books:
             return self.recommend_randomBooks()
-        
-        same_category_books = list(Book.objects.filter(categoryId_book=user_books[0].categoryId_book).exclude(isbn13__in=user_books_isbn13))
 
-        descriptions = [f"{book.title} {book.author} {book.description}" for book in same_category_books]
+        latest_book = user_books[0]
+        same_category_books = list(Book.objects.filter(categoryId_book=latest_book.categoryId_book).exclude(isbn13__in=user_books_isbn13))
+
+        descriptions = [f"{latest_book.title} {latest_book.author} {latest_book.description}" for _ in same_category_books] 
+        descriptions += [f"{book.title} {book.author} {book.description}" for book in same_category_books]
+
         vectorizer = TfidfVectorizer()
         tfidf_matrix = vectorizer.fit_transform(descriptions)
         cosine_sim = cosine_similarity(tfidf_matrix)
 
-        self.G = nx.Graph()
-        for i in range(len(same_category_books)):
-            for j in range(i+1, len(same_category_books)):
-                if same_category_books[i].categoryId_book.depth3 == same_category_books[j].categoryId_book.depth3:
-                    self.G.add_edge(same_category_books[i].title, same_category_books[j].title, weight=cosine_sim[i][j])
-            
-        latest_book = user_books[0]
-        same_category_books = Book.objects.filter(categoryId_book=latest_book.categoryId_book).exclude(isbn13__in=user_books_isbn13 + recommended_books_isbn13)[:5]
-        
-        for book in same_category_books:
-            recommended_books_isbn13.append(book.isbn13)
-                
-        if len(user_books) > 1 and len(recommended_books_isbn13) < 15:
+        similarities = cosine_sim[0, 1:]
+        recommended_books_isbn13 = [same_category_books[i].isbn13 for i in similarities.argsort()[-5:][::-1]]
+
+        if len(user_books) > 1:
             user_categories = [book.categoryId_book for book in user_books[1:]]
             category_counts = Counter(user_categories)
             total = sum(category_counts.values())
             category_ratios = {category: count / total for category, count in category_counts.items()}
 
-            for category, ratio in category_ratios.items():
-                if len(recommended_books_isbn13) >= 15:
-                    break
+            for category, ratio in sorted(category_ratios.items(), key=lambda item: item[1], reverse=True):
                 num_books = int(ratio * (15 - len(recommended_books_isbn13)))
                 category_books = Book.objects.filter(categoryId_book=category).exclude(isbn13__in=user_books_isbn13 + recommended_books_isbn13)[:num_books]
-                for book in category_books:
-                    if len(recommended_books_isbn13) >= 15:
-                        break
-                    recommended_books_isbn13.append(book.isbn13)
-
+                recommended_books_isbn13.extend([book.isbn13 for book in category_books])
+                if len(recommended_books_isbn13) >= 15:
+                    break
+                
         recommended_books = Book.objects.filter(isbn13__in=recommended_books_isbn13)
         recommendations = [{
             'title': book.title,
@@ -149,7 +140,10 @@ class BookRecommender:
             'isbn13': book.isbn13
         } for book in recommended_books]
 
+        if not recommendations:
+            return self.recommend_randomBooks()
         return recommendations[:15]
+
 
 # 도서 제목, 작가, 설명을 사용해서 코사인 유사도 계산
 # class BookRecommender:
